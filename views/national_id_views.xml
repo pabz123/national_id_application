@@ -136,6 +136,7 @@
     </record>
 
     <!-- =============== SEARCH VIEW =============== -->
+    <!-- Temporarily disabled for testing
     <record id="view_national_id_application_search" model="ir.ui.view">
         <field name="name">national.id.application.search</field>
         <field name="model">national.id.application</field>
@@ -164,5 +165,6 @@
             </search>
         </field>
     </record>
+    -->
 
 </odoo>

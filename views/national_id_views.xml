@@ -63,12 +63,12 @@
                         string="Reject"
                         type="object"
                         class="btn-danger"
-                        invisible="state in ('approved', 'rejected')"/>
+                        invisible="state in ['approved', 'rejected']"/>
                     
                     <button name="action_reset_to_new"
                         string="Reset to New"
                         type="object"
-                        invisible="state not in ('rejected',)"/>
+                        invisible="state != 'rejected'"/>
                     
                     <field name="state" widget="statusbar"
                         statusbar_visible="new,stage1_review,stage1_approved,stage2_review,approved"/>

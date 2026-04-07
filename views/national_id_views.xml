@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- =============== SEQUENCE FOR AUTO-NUMBERING =============== -->
+    <record id="seq_national_id_application" model="ir.sequence">
+        <field name="name">National ID Application</field>
+        <field name="code">national.id.application</field>
+        <field name="prefix">NID/%(year)s/</field>
+        <field name="padding">4</field>
+        <field name="number_next">1</field>
+        <field name="number_increment">1</field>
+    </record>
+
+    <!-- =============== LIST VIEW =============== -->
+    <record id="view_national_id_application_list" model="ir.ui.view">
+        <field name="name">national.id.application.list</field>
+        <field name="model">national.id.application</field>
+        <field name="arch" type="xml">
+            <list string="National ID Applications">
+                <field name="name"/>
+                <field name="full_name"/>
+                <field name="phone"/>
+                <field name="district"/>
+                <field name="create_date"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- =============== FORM VIEW =============== -->
+    <record id="view_national_id_application_form" model="ir.ui.view">
+        <field name="name">national.id.application.form</field>
+        <field name="model">national.id.application</field>
+        <field name="arch" type="xml">
+            <form string="National ID Application">
+                <header>
+                    <!-- Workflow Buttons -->
+                    <button name="action_submit_stage1"
+                        string="Submit for Stage 1"
+                        type="object"
+                        class="btn-primary"
+                        invisible="state != 'new'"/>
+                    
+                    <button name="action_approve_stage1"
+                        string="Approve Stage 1"
+                        type="object"
+                        class="btn-success"
+                        invisible="state != 'stage1_review'"/>
+                    
+                    <button name="action_submit_stage2"
+                        string="Submit for Stage 2"
+                        type="object"
+                        class="btn-primary"
+                        invisible="state != 'stage1_approved'"/>
+                    
+                    <button name="action_approve_stage2"
+                        string="Approve Stage 2 (Final)"
+                        type="object"
+                        class="btn-success"
+                        invisible="state != 'stage2_review'"/>
+                    
+                    <button name="action_reject"
+                        string="Reject"
+                        type="object"
+                        class="btn-danger"
+                        invisible="state in ('approved', 'rejected')"/>
+                    
+                    <button name="action_reset_to_new"
+                        string="Reset to New"
+                        type="object"
+                        invisible="state not in ('rejected',)"/>
+                    
+                    <field name="state" widget="statusbar"
+                        statusbar_visible="new,stage1_review,stage1_approved,stage2_review,approved"/>
+                </header>
+                
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    
+                    <group>
+                        <group string="Personal Information">
+                            <field name="full_name"/>
+                            <field name="date_of_birth"/>
+                            <field name="gender"/>
+                            <field name="nationality_id"/>
+                            <field name="existing_id_number"/>
+                        </group>
+                        
+                        <group string="Contact Information">
+                            <field name="district"/>
+                            <field name="phone"/>
+                            <field name="email"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Attachments">
+                            <group>
+                                <group string="Passport Photo">
+                                    <field name="photo" widget="image" class="oe_avatar"/>
+                                    <field name="photo_filename" invisible="1"/>
+                                </group>
+                                <group string="LC Reference Letter">
+                                    <field name="lc_letter" filename="lc_letter_filename"/>
+                                    <field name="lc_letter_filename" invisible="1"/>
+                                </group>
+                            </group>
+                        </page>
+                        
+                        <page string="Approval Information" invisible="state == 'new'">
+                            <group>
+                                <group string="Stage 1 Approval">
+                                    <field name="stage1_approver_id"/>
+                                    <field name="stage1_approval_date"/>
+                                </group>
+                                <group string="Stage 2 Approval">
+                                    <field name="stage2_approver_id"/>
+                                    <field name="stage2_approval_date"/>
+                                </group>
+                            </group>
+                            <group>
+                                <field name="rejection_reason" invisible="state != 'rejected'"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                
+                <!-- Chatter for logging approval messages -->
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- =============== SEARCH VIEW =============== -->
+    <record id="view_national_id_application_search" model="ir.ui.view">
+        <field name="name">national.id.application.search</field>
+        <field name="model">national.id.application</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="full_name"/>
+                <field name="phone"/>
+                <field name="district"/>
+                <filter name="new" string="New"
+                    domain="[('state','=','new')]"/>
+                <filter name="stage1_review" string="Stage 1 Review"
+                    domain="[('state','=','stage1_review')]"/>
+                <filter name="stage1_approved" string="Stage 1 Approved"
+                    domain="[('state','=','stage1_approved')]"/>
+                <filter name="approved" string="Approved"
+                    domain="[('state','=','approved')]"/>
+                <filter name="rejected" string="Rejected"
+                    domain="[('state','=','rejected')]"/>
+                <group string="Group By">
+                    <filter name="group_state" string="Status"
+                        context="{'group_by': 'state'}"/>
+                    <filter name="group_district" string="District"
+                        context="{'group_by': 'district'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+</odoo>

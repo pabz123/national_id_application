@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- =============== APPLICATION FORM TEMPLATE =============== -->
+    <template id="application_form_template" name="National ID Application Form">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure">
+                <div class="container mt-5 mb-5">
+                    <div class="row">
+                        <div class="col-md-8 offset-md-2">
+                            <h1 class="text-center mb-4">National ID Application</h1>
+                            <p class="text-center text-muted mb-5">
+                                Please fill in all required fields accurately.
+                            </p>
+                            
+                            <form action="/national-id/submit" method="POST" enctype="multipart/form-data" class="o_mark_required">
+                                
+                                <!-- Personal Information -->
+                                <h4 class="mt-4 mb-3">Personal Information</h4>
+                                
+                                <div class="mb-3">
+                                    <label for="full_name" class="form-label">Full Name *</label>
+                                    <input type="text" class="form-control" id="full_name" name="full_name" required="required"/>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="date_of_birth" class="form-label">Date of Birth *</label>
+                                    <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" required="required"/>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="gender" class="form-label">Gender *</label>
+                                    <select class="form-select" id="gender" name="gender" required="required">
+                                        <option value="">-- Select Gender --</option>
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="nationality_id" class="form-label">Nationality *</label>
+                                    <select class="form-select" id="nationality_id" name="nationality_id" required="required">
+                                        <option value="">-- Select Country --</option>
+                                        <t t-foreach="countries" t-as="country">
+                                            <option t-att-value="country.id">
+                                                <t t-esc="country.name"/>
+                                            </option>
+                                        </t>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="existing_id_number" class="form-label">Existing National ID Number (if renewal)</label>
+                                    <input type="text" class="form-control" id="existing_id_number" name="existing_id_number"/>
+                                    <small class="form-text text-muted">Leave blank if this is your first application.</small>
+                                </div>
+                                
+                                <!-- Contact Information -->
+                                <h4 class="mt-5 mb-3">Contact Information</h4>
+                                
+                                <div class="mb-3">
+                                    <label for="district" class="form-label">District of Origin *</label>
+                                    <input type="text" class="form-control" id="district" name="district" required="required"/>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Phone Number *</label>
+                                    <input type="tel" class="form-control" id="phone" name="phone" required="required"/>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" id="email" name="email"/>
+                                </div>
+                                
+                                <!-- Required Documents -->
+                                <h4 class="mt-5 mb-3">Required Documents</h4>
+                                
+                                <div class="mb-3">
+                                    <label for="photo" class="form-label">Passport Photo *</label>
+                                    <input type="file" class="form-control" id="photo" name="photo" accept="image/*" required="required"/>
+                                    <small class="form-text text-muted">Upload a clear passport-sized photo.</small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="lc_letter" class="form-label">LC Reference Letter *</label>
+                                    <input type="file" class="form-control" id="lc_letter" name="lc_letter" accept=".pdf,.doc,.docx,image/*" required="required"/>
+                                    <small class="form-text text-muted">Upload the reference letter from your Local Council.</small>
+                                </div>
+                                
+                                <!-- Submit Button -->
+                                <div class="text-center mt-5">
+                                    <button type="submit" class="btn btn-primary btn-lg">Submit Application</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+    
+    <!-- =============== SUCCESS PAGE TEMPLATE =============== -->
+    <template id="application_success_template" name="Application Success">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure">
+                <div class="container mt-5 mb-5">
+                    <div class="row">
+                        <div class="col-md-6 offset-md-3 text-center">
+                            <div class="alert alert-success p-5">
+                                <h1 class="mb-4">✓ Application Submitted Successfully!</h1>
+                                <h3 class="mb-4">Your Reference Number:</h3>
+                                <h2 class="text-primary mb-4">
+                                    <strong t-esc="reference"/>
+                                </h2>
+                                <p class="lead">
+                                    Please save this reference number for tracking your application.
+                                </p>
+                                <p class="text-muted">
+                                    You will be notified once your application is processed.
+                                </p>
+                                <a href="/" class="btn btn-primary mt-4">Back to Home</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>

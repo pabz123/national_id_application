@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Main menu item in the App Drawer -->
+    <menuitem id="menu_national_id_root"
+        name="National ID"
+        sequence="10"/>
+
+    <!-- Submenu: Applications -->
+    <menuitem id="menu_national_id_applications"
+        name="Applications"
+        parent="menu_national_id_root"
+        sequence="10"/>
+
+    <!-- Action to open the list view -->
+    <record id="action_national_id_application" model="ir.actions.act_window">
+        <field name="name">ID Applications</field>
+        <field name="res_model">national.id.application</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No applications yet. Citizens can apply via the web portal.
+            </p>
+        </field>
+    </record>
+
+    <!-- Link the action to the menu -->
+    <menuitem id="menu_national_id_application_list"
+        name="All Applications"
+        parent="menu_national_id_applications"
+        action="action_national_id_application"
+        sequence="10"/>
+
+</odoo>

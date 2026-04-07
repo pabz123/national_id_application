@@ -19,8 +19,9 @@
             <list string="National ID Applications">
                 <field name="name"/>
                 <field name="full_name"/>
+                <field name="age"/>
                 <field name="phone"/>
-                <field name="district"/>
+                <field name="district_id"/>
                 <field name="create_date"/>
                 <field name="state"/>
             </list>
@@ -85,16 +86,28 @@
                         <group string="Personal Information">
                             <field name="full_name"/>
                             <field name="date_of_birth"/>
+                            <field name="age" readonly="1"/>
                             <field name="gender"/>
+                            <field name="marital_status"/>
                             <field name="nationality_id"/>
                             <field name="existing_id_number"/>
                         </group>
                         
                         <group string="Contact Information">
-                            <field name="district"/>
+                            <field name="district_id" domain="[('country_id', '=', nationality_id)]"/>
+                            <field name="address"/>
                             <field name="phone"/>
                             <field name="email"/>
+                            <field name="occupation"/>
                         </group>
+                    </group>
+                    
+                    <group>
+                        <group string="Family Information">
+                            <field name="father_name"/>
+                            <field name="mother_name"/>
+                        </group>
+                        <group/>
                     </group>
                     
                     <notebook>

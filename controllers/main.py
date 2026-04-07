@@ -16,9 +16,13 @@ class NationalIdController(http.Controller):
         website=True applies Odoo's website styling.
         """
         countries = request.env['res.country'].sudo().search([])
+        districts = request.env['national.id.district'].sudo().search([])
         return request.render(
             'national_id_application.application_form_template',
-            {'countries': countries}
+            {
+                'countries': countries,
+                'districts': districts,
+            }
         )
     
     @http.route('/national-id/submit', type='http', auth='public', 

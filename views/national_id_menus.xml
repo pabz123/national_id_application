@@ -12,6 +12,12 @@
         parent="menu_national_id_root"
         sequence="10"/>
 
+    <!-- Submenu: Configuration -->
+    <menuitem id="menu_national_id_config"
+        name="Configuration"
+        parent="menu_national_id_root"
+        sequence="100"/>
+
     <!-- Action to open the list view -->
     <record id="action_national_id_application" model="ir.actions.act_window">
         <field name="name">ID Applications</field>
@@ -29,6 +35,13 @@
         name="All Applications"
         parent="menu_national_id_applications"
         action="action_national_id_application"
+        sequence="10"/>
+
+    <!-- Districts menu -->
+    <menuitem id="menu_district_list"
+        name="Districts"
+        parent="menu_national_id_config"
+        action="action_district"
         sequence="10"/>
 
 </odoo>

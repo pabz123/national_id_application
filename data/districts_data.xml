@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        
+        <!-- Uganda Districts -->
+        <record id="district_kampala" model="national.id.district">
+            <field name="name">Kampala</field>
+            <field name="country_id" ref="base.ug"/>
+        </record>
+        
+        <record id="district_wakiso" model="national.id.district">
+            <field name="name">Wakiso</field>
+            <field name="country_id" ref="base.ug"/>
+        </record>
+        
+        <record id="district_mukono" model="national.id.district">
+            <field name="name">Mukono</field>
+            <field name="country_id" ref="base.ug"/>
+        </record>
+        
+        <record id="district_jinja" model="national.id.district">
+            <field name="name">Jinja</field>
+            <field name="country_id" ref="base.ug"/>
+        </record>
+        
+        <record id="district_gulu" model="national.id.district">
+            <field name="name">Gulu</field>
+            <field name="country_id" ref="base.ug"/>
+        </record>
+        
+        <record id="district_mbarara" model="national.id.district">
+            <field name="name">Mbarara</field>
+            <field name="country_id" ref="base.ug"/>
+        </record>
+        
+        <!-- Kenya Districts/Counties -->
+        <record id="district_nairobi" model="national.id.district">
+            <field name="name">Nairobi</field>
+            <field name="country_id" ref="base.ke"/>
+        </record>
+        
+        <record id="district_mombasa" model="national.id.district">
+            <field name="name">Mombasa</field>
+            <field name="country_id" ref="base.ke"/>
+        </record>
+        
+        <record id="district_kisumu" model="national.id.district">
+            <field name="name">Kisumu</field>
+            <field name="country_id" ref="base.ke"/>
+        </record>
+        
+    </data>
+</odoo>

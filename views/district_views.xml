@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- District List View -->
+    <record id="view_district_list" model="ir.ui.view">
+        <field name="name">national.id.district.list</field>
+        <field name="model">national.id.district</field>
+        <field name="arch" type="xml">
+            <list string="Districts">
+                <field name="name"/>
+                <field name="country_id"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- District Form View -->
+    <record id="view_district_form" model="ir.ui.view">
+        <field name="name">national.id.district.form</field>
+        <field name="model">national.id.district</field>
+        <field name="arch" type="xml">
+            <form string="District">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="country_id"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- District Action -->
+    <record id="action_district" model="ir.actions.act_window">
+        <field name="name">Districts</field>
+        <field name="res_model">national.id.district</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
+from datetime import date
+from dateutil.relativedelta import relativedelta
 
 
 class NationalIdApplication(models.Model):
@@ -8,6 +10,12 @@ class NationalIdApplication(models.Model):
     _description = 'National ID Application'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'create_date desc'
+    
+    # SQL Constraints
+    _sql_constraints = [
+        ('email_unique', 'UNIQUE(email)', 'This email address is already registered!'),
+        ('phone_unique', 'UNIQUE(phone)', 'This phone number is already registered!'),
+    ]
 
     # ========== BASIC INFORMATION ==========
     
@@ -16,7 +24,7 @@ class NationalIdApplication(models.Model):
         required=True,
         copy=False,
         readonly=True,
-        default='New'
+        default=lambda self: self.env['ir.sequence'].next_by_code('national.id.application') or 'New'
     )
     
     full_name = fields.Char(
@@ -29,6 +37,12 @@ class NationalIdApplication(models.Model):
         string='Date of Birth',
         required=True,
         tracking=True
+    )
+    
+    age = fields.Integer(
+        string='Age',
+        compute='_compute_age',
+        store=True
     )
     
     gender = fields.Selection([
@@ -49,7 +63,8 @@ class NationalIdApplication(models.Model):
         tracking=True
     )
     
-    district = fields.Char(
+    district_id = fields.Many2one(
+        'national.id.district',
         string='District of Origin',
         required=True,
         tracking=True
@@ -63,6 +78,38 @@ class NationalIdApplication(models.Model):
     
     email = fields.Char(
         string='Email Address',
+        required=True,
+        tracking=True
+    )
+    
+    # ========== NEW FIELDS ==========
+    
+    address = fields.Text(
+        string='Residential Address',
+        required=True,
+        tracking=True
+    )
+    
+    occupation = fields.Char(
+        string='Occupation',
+        required=True,
+        tracking=True
+    )
+    
+    marital_status = fields.Selection([
+        ('single', 'Single'),
+        ('married', 'Married'),
+        ('divorced', 'Divorced'),
+        ('widowed', 'Widowed'),
+    ], string='Marital Status', required=True, tracking=True)
+    
+    father_name = fields.Char(
+        string="Father's Full Name",
+        tracking=True
+    )
+    
+    mother_name = fields.Char(
+        string="Mother's Full Name",
         tracking=True
     )
     
@@ -125,12 +172,60 @@ class NationalIdApplication(models.Model):
         string='Rejection Reason'
     )
     
+    # ========== COMPUTED FIELDS & VALIDATIONS ==========
+    
+    @api.depends('date_of_birth')
+    def _compute_age(self):
+        """Calculate age from date of birth"""
+        today = date.today()
+        for record in self:
+            if record.date_of_birth:
+                record.age = relativedelta(today, record.date_of_birth).years
+            else:
+                record.age = 0
+    
+    @api.constrains('date_of_birth')
+    def _check_age(self):
+        """Ensure applicant is at least 18 years old"""
+        for record in self:
+            if record.date_of_birth:
+                today = date.today()
+                age = relativedelta(today, record.date_of_birth).years
+                if age < 18:
+                    raise ValidationError(
+                        f'Applicant must be at least 18 years old. Current age: {age} years.'
+                    )
+                if age > 120:
+                    raise ValidationError(
+                        'Please enter a valid date of birth.'
+                    )
+    
+    @api.constrains('email')
+    def _check_email(self):
+        """Validate email format"""
+        import re
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        for record in self:
+            if record.email and not re.match(email_pattern, record.email):
+                raise ValidationError('Please enter a valid email address.')
+    
+    @api.constrains('phone')
+    def _check_phone(self):
+        """Validate phone number format"""
+        import re
+        for record in self:
+            if record.phone:
+                # Remove spaces and special characters
+                phone_clean = re.sub(r'[^\d+]', '', record.phone)
+                if len(phone_clean) < 10:
+                    raise ValidationError('Phone number must be at least 10 digits.')
+    
     # ========== AUTO-NUMBERING ==========
     
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
-            if vals.get('name', 'New') == 'New':
+            if not vals.get('name') or vals.get('name') == 'New':
                 vals['name'] = self.env['ir.sequence'].next_by_code(
                     'national.id.application'
                 ) or 'New'

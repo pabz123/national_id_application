@@ -12,6 +12,8 @@
     'depends':  ['base', 'mail', 'web', 'portal'],
     'data': [
         'security/ir.model.access.csv',
+        'data/districts_data.xml',
+        'views/district_views.xml',
         'views/national_id_views.xml',
         'views/national_id_menus.xml',
         'templates/application_form.xml',

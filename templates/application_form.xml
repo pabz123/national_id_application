@@ -13,7 +13,7 @@
                                 Please fill in all required fields accurately.
                             </p>
                             
-                            <form action="/national-id/submit" method="POST" enctype="multipart/form-data" class="o_mark_required">
+                            <form action="/national-id/submit" method="POST" enctype="multipart/form-data" class="o_mark_required" id="application_form">
                                 
                                 <!-- Personal Information -->
                                 <h4 class="mt-4 mb-3">Personal Information</h4>
@@ -25,7 +25,9 @@
                                 
                                 <div class="mb-3">
                                     <label for="date_of_birth" class="form-label">Date of Birth *</label>
-                                    <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" required="required"/>
+                                    <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" required="required" onchange="validateDateOfBirth()"/>
+                                    <small class="text-muted">Cannot be a future date</small>
+                                    <div id="dob-error" class="invalid-feedback" style="display: none;"></div>
                                 </div>
                                 
                                 <div class="mb-3">
@@ -40,10 +42,10 @@
                                 
                                 <div class="mb-3">
                                     <label for="nationality_id" class="form-label">Nationality *</label>
-                                    <select class="form-select" id="nationality_id" name="nationality_id" required="required">
+                                    <select class="form-select" id="nationality_id" name="nationality_id" required="required" onchange="filterDistricts()">
                                         <option value="">-- Select Country --</option>
                                         <t t-foreach="countries" t-as="country">
-                                            <option t-att-value="country.id">
+                                            <option t-att-value="country.id" t-att-data-country-id="country.id">
                                                 <t t-esc="country.name"/>
                                             </option>
                                         </t>
@@ -51,27 +53,39 @@
                                 </div>
                                 
                                 <div class="mb-3">
-                                    <label for="existing_id_number" class="form-label">Existing National ID Number (if renewal)</label>
-                                    <input type="text" class="form-control" id="existing_id_number" name="existing_id_number"/>
-                                    <small class="form-text text-muted">Leave blank if this is your first application.</small>
+                                    <label for="existing_nin" class="form-label">Existing NIN (if renewal/replacement)</label>
+                                    <input type="text" class="form-control" id="existing_nin" name="existing_nin" placeholder="CM00000000000"/>
+                                    <small class="form-text text-muted">National Identification Number - Fill only if renewing or replacing lost ID</small>
                                 </div>
                                 
                                 <!-- Contact Information -->
                                 <h4 class="mt-5 mb-3">Contact Information</h4>
                                 
                                 <div class="mb-3">
-                                    <label for="district" class="form-label">District of Origin *</label>
-                                    <input type="text" class="form-control" id="district" name="district" required="required"/>
+                                    <label for="district_name" class="form-label">District of Origin *</label>
+                                    <input type="text" class="form-control" id="district_name" name="district_name" list="district_list" required="required" placeholder="Select or type your district"/>
+                                    <datalist id="district_list">
+                                        <t t-foreach="districts" t-as="district">
+                                            <option t-att-value="district.name" 
+                                                    t-att-data-country-id="district.country_id.id"
+                                                    t-att-data-district-id="district.id"
+                                                    style="display:none;">
+                                            </option>
+                                        </t>
+                                    </datalist>
+                                    <small class="text-muted">Select from the list or type your district name if not available</small>
+                                    <input type="hidden" id="district_id" name="district_id" value=""/>
                                 </div>
                                 
                                 <div class="mb-3">
                                     <label for="phone" class="form-label">Phone Number *</label>
-                                    <input type="tel" class="form-control" id="phone" name="phone" required="required"/>
+                                    <input type="tel" class="form-control" id="phone" name="phone" required="required" placeholder="+256700000000"/>
+                                    <small class="text-muted">Format: +256700000000</small>
                                 </div>
                                 
                                 <div class="mb-3">
-                                    <label for="email" class="form-label">Email Address</label>
-                                    <input type="email" class="form-control" id="email" name="email"/>
+                                    <label for="email" class="form-label">Email Address *</label>
+                                    <input type="email" class="form-control" id="email" name="email" required="required" placeholder="your.email@example.com"/>
                                 </div>
                                 
                                 <!-- Required Documents -->
@@ -94,6 +108,116 @@
                                     <button type="submit" class="btn btn-primary btn-lg">Submit Application</button>
                                 </div>
                             </form>
+                            
+                            <!-- JavaScript for dynamic district filtering and age validation -->
+                            <script>
+                                // Filter districts based on selected country
+                                function filterDistricts() {
+                                    var nationalitySelect = document.getElementById('nationality_id');
+                                    var districtInput = document.getElementById('district_name');
+                                    var districtIdInput = document.getElementById('district_id');
+                                    var selectedCountry = nationalitySelect.value;
+                                    
+                                    // Clear district input and hidden ID
+                                    districtInput.value = '';
+                                    districtIdInput.value = '';
+                                    
+                                    // Show/hide datalist options based on country
+                                    var datalist = document.getElementById('district_list');
+                                    var options = datalist.options;
+                                    var hasDistricts = false;
+                                    
+                                    for (var i = 0; i &lt; options.length; i++) {
+                                        var option = options[i];
+                                        if (option.getAttribute('data-country-id') === selectedCountry) {
+                                            option.style.display = 'block';
+                                            hasDistricts = true;
+                                        } else {
+                                            option.style.display = 'none';
+                                        }
+                                    }
+                                    
+                                    // Update placeholder based on availability
+                                    if (selectedCountry) {
+                                        if (hasDistricts) {
+                                            districtInput.placeholder = 'Select from list or type your district';
+                                        } else {
+                                            districtInput.placeholder = 'Type your district name';
+                                        }
+                                    } else {
+                                        districtInput.placeholder = 'First select your nationality';
+                                    }
+                                }
+                                
+                                // Update hidden district_id when user selects from datalist
+                                document.getElementById('district_name').addEventListener('input', function() {
+                                    var districtName = this.value;
+                                    var datalist = document.getElementById('district_list');
+                                    var options = datalist.options;
+                                    var districtIdInput = document.getElementById('district_id');
+                                    
+                                    // Try to find matching district ID
+                                    districtIdInput.value = '';
+                                    for (var i = 0; i &lt; options.length; i++) {
+                                        if (options[i].value === districtName) {
+                                            var districtId = options[i].getAttribute('data-district-id');
+                                            if (districtId) {
+                                                districtIdInput.value = districtId;
+                                            }
+                                            break;
+                                        }
+                                    }
+                                });
+                                
+                                // Instant validation for date of birth
+                                function validateDateOfBirth() {
+                                    var dobInput = document.getElementById('date_of_birth');
+                                    var dobError = document.getElementById('dob-error');
+                                    var dob = new Date(dobInput.value);
+                                    var today = new Date();
+                                    
+                                    // Set today to start of day for fair comparison
+                                    today.setHours(0, 0, 0, 0);
+                                    dob.setHours(0, 0, 0, 0);
+                                    
+                                    // Clear previous error state
+                                    dobInput.classList.remove('is-invalid');
+                                    dobError.style.display = 'none';
+                                    
+                                    if (!dobInput.value) {
+                                        return; // Don't show error if empty (required attribute will handle it)
+                                    }
+                                    
+                                    // Check if date is in the future
+                                    if (dob > today) {
+                                        dobInput.classList.add('is-invalid');
+                                        dobError.textContent = '❌ Date of birth cannot be in the future!';
+                                        dobError.style.display = 'block';
+                                        return false;
+                                    }
+                                    
+                                    // Check if date is more than 120 years ago
+                                    var age = today.getFullYear() - dob.getFullYear();
+                                    if (age > 120) {
+                                        dobInput.classList.add('is-invalid');
+                                        dobError.textContent = '⚠️ Please verify the date of birth. The date entered suggests an age over 120 years.';
+                                        dobError.style.display = 'block';
+                                        return false;
+                                    }
+                                    
+                                    // If valid, show success indicator
+                                    dobInput.classList.add('is-valid');
+                                    return true;
+                                }
+                                
+                                // Also validate on form submission
+                                document.getElementById('application_form').addEventListener('submit', function(e) {
+                                    if (validateDateOfBirth() === false) {
+                                        e.preventDefault();
+                                        return false;
+                                    }
+                                });
+                            </script>
                         </div>
                     </div>
                 </div>

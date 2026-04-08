@@ -88,26 +88,16 @@
                             <field name="date_of_birth"/>
                             <field name="age" readonly="1"/>
                             <field name="gender"/>
-                            <field name="marital_status"/>
                             <field name="nationality_id"/>
-                            <field name="existing_id_number"/>
+                            <field name="existing_nin"/>
                         </group>
                         
                         <group string="Contact Information">
-                            <field name="district_id" domain="[('country_id', '=', nationality_id)]"/>
-                            <field name="address"/>
+                            <field name="district_name"/>
+                            <field name="district_id" domain="[('country_id', '=', nationality_id)]" readonly="1"/>
                             <field name="phone"/>
                             <field name="email"/>
-                            <field name="occupation"/>
                         </group>
-                    </group>
-                    
-                    <group>
-                        <group string="Family Information">
-                            <field name="father_name"/>
-                            <field name="mother_name"/>
-                        </group>
-                        <group/>
                     </group>
                     
                     <notebook>

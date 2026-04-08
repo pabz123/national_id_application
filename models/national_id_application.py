@@ -58,16 +58,23 @@ class NationalIdApplication(models.Model):
         tracking=True
     )
     
-    existing_id_number = fields.Char(
-        string='Existing National ID (if renewal)',
+    existing_nin = fields.Char(
+        string='Existing NIN (National Identification Number)',
+        help='Fill this only if you are renewing/replacing an existing National ID',
         tracking=True
     )
     
     district_id = fields.Many2one(
         'national.id.district',
         string='District of Origin',
-        required=True,
         tracking=True
+    )
+    
+    district_name = fields.Char(
+        string='District Name',
+        required=True,
+        tracking=True,
+        help='Name of district - can be from list or manually entered'
     )
     
     phone = fields.Char(
@@ -79,37 +86,6 @@ class NationalIdApplication(models.Model):
     email = fields.Char(
         string='Email Address',
         required=True,
-        tracking=True
-    )
-    
-    # ========== NEW FIELDS ==========
-    
-    address = fields.Text(
-        string='Residential Address',
-        required=True,
-        tracking=True
-    )
-    
-    occupation = fields.Char(
-        string='Occupation',
-        required=True,
-        tracking=True
-    )
-    
-    marital_status = fields.Selection([
-        ('single', 'Single'),
-        ('married', 'Married'),
-        ('divorced', 'Divorced'),
-        ('widowed', 'Widowed'),
-    ], string='Marital Status', required=True, tracking=True)
-    
-    father_name = fields.Char(
-        string="Father's Full Name",
-        tracking=True
-    )
-    
-    mother_name = fields.Char(
-        string="Mother's Full Name",
         tracking=True
     )
     
@@ -186,18 +162,19 @@ class NationalIdApplication(models.Model):
     
     @api.constrains('date_of_birth')
     def _check_age(self):
-        """Ensure applicant is at least 18 years old"""
+        """Ensure date of birth is not in the future"""
         for record in self:
             if record.date_of_birth:
                 today = date.today()
-                age = relativedelta(today, record.date_of_birth).years
-                if age < 18:
+                if record.date_of_birth > today:
                     raise ValidationError(
-                        f'Applicant must be at least 18 years old. Current age: {age} years.'
+                        'Date of birth cannot be in the future! Please enter a valid date.'
                     )
+                # Check if person is older than 120 years (likely a data entry error)
+                age = relativedelta(today, record.date_of_birth).years
                 if age > 120:
                     raise ValidationError(
-                        'Please enter a valid date of birth.'
+                        'Please verify the date of birth. Age appears to be over 120 years.'
                     )
     
     @api.constrains('email')

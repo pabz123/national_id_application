@@ -2,14 +2,16 @@
 <odoo>
 
     <!-- =============== SEQUENCE FOR AUTO-NUMBERING =============== -->
-    <record id="seq_national_id_application" model="ir.sequence">
-        <field name="name">National ID Application</field>
-        <field name="code">national.id.application</field>
-        <field name="prefix">NID/%(year)s/</field>
-        <field name="padding">4</field>
-        <field name="number_next">1</field>
-        <field name="number_increment">1</field>
-    </record>
+    <data noupdate="1">
+        <record id="seq_national_id_application" model="ir.sequence">
+            <field name="name">National ID Application</field>
+            <field name="code">national.id.application</field>
+            <field name="prefix">NID/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+        </record>
+    </data>
 
     <!-- =============== LIST VIEW =============== -->
     <record id="view_national_id_application_list" model="ir.ui.view">
@@ -21,7 +23,7 @@
                 <field name="full_name"/>
                 <field name="age"/>
                 <field name="phone"/>
-                <field name="district_id"/>
+                <field name="district_name"/>
                 <field name="create_date"/>
                 <field name="state"/>
             </list>
@@ -42,7 +44,7 @@
                         class="btn-primary"
                         invisible="state != 'new'"/>
                     
-                    <button name="action_approve_stage1"
+                    <button name="action_open_stage1_approval_wizard"
                         string="Approve Stage 1"
                         type="object"
                         class="btn-success"
@@ -54,13 +56,13 @@
                         class="btn-primary"
                         invisible="state != 'stage1_approved'"/>
                     
-                    <button name="action_approve_stage2"
+                    <button name="action_open_stage2_approval_wizard"
                         string="Approve Stage 2 (Final)"
                         type="object"
                         class="btn-success"
                         invisible="state != 'stage2_review'"/>
                     
-                    <button name="action_reject"
+                    <button name="action_open_rejection_wizard"
                         string="Reject"
                         type="object"
                         class="btn-danger"
@@ -117,16 +119,24 @@
                         <page string="Approval Information" invisible="state == 'new'">
                             <group>
                                 <group string="Stage 1 Approval">
+                                    <field name="stage1_identity_verified" readonly="state not in ['stage1_review']"/>
+                                    <field name="stage1_documents_verified" readonly="state not in ['stage1_review']"/>
+                                    <field name="stage1_review_notes" readonly="state not in ['stage1_review']"/>
                                     <field name="stage1_approver_id"/>
                                     <field name="stage1_approval_date"/>
                                 </group>
                                 <group string="Stage 2 Approval">
+                                    <field name="stage2_data_crosschecked" readonly="state not in ['stage2_review']"/>
+                                    <field name="stage2_review_notes" readonly="state not in ['stage2_review']"/>
                                     <field name="stage2_approver_id"/>
                                     <field name="stage2_approval_date"/>
                                 </group>
                             </group>
-                            <group>
-                                <field name="rejection_reason" invisible="state != 'rejected'"/>
+                            <group string="Rejection Details" invisible="state != 'rejected'">
+                                <field name="rejection_category" readonly="1"/>
+                                <field name="rejection_reason" readonly="1"/>
+                                <field name="rejected_by_id" readonly="1"/>
+                                <field name="rejected_on" readonly="1"/>
                             </group>
                         </page>
                     </notebook>

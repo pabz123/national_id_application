@@ -10,6 +10,14 @@ class NationalIdApplication(models.Model):
     _description = 'National ID Application'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'create_date desc'
+
+    REJECTION_CATEGORIES = [
+        ('incomplete_information', 'Incomplete Information'),
+        ('invalid_documents', 'Invalid Documents'),
+        ('duplicate_application', 'Duplicate Application'),
+        ('failed_verification', 'Failed Verification'),
+        ('other', 'Other'),
+    ]
     
     # SQL Constraints
     _sql_constraints = [
@@ -143,9 +151,50 @@ class NationalIdApplication(models.Model):
         string='Stage 2 Approval Date',
         readonly=True
     )
+
+    stage1_identity_verified = fields.Boolean(
+        string='Identity details verified',
+        tracking=True
+    )
+
+    stage1_documents_verified = fields.Boolean(
+        string='Documents verified (Photo + LC Letter)',
+        tracking=True
+    )
+
+    stage1_review_notes = fields.Text(
+        string='Stage 1 Review Notes'
+    )
+
+    stage2_data_crosschecked = fields.Boolean(
+        string='Records cross-check completed',
+        tracking=True
+    )
+
+    stage2_review_notes = fields.Text(
+        string='Stage 2 Review Notes'
+    )
+
+    rejection_category = fields.Selection(
+        selection=REJECTION_CATEGORIES,
+        string='Rejection Category',
+        tracking=True
+    )
     
     rejection_reason = fields.Text(
-        string='Rejection Reason'
+        string='Rejection Reason',
+        tracking=True
+    )
+
+    rejected_by_id = fields.Many2one(
+        'res.users',
+        string='Rejected By',
+        readonly=True
+    )
+
+    rejected_on = fields.Datetime(
+        string='Rejected On',
+        readonly=True
     )
     
     # ========== COMPUTED FIELDS & VALIDATIONS ==========
@@ -218,17 +267,46 @@ class NationalIdApplication(models.Model):
             body='Application submitted for Stage 1 review.',
             subject='Stage 1 Review Started'
         )
+
+    def action_open_stage1_approval_wizard(self):
+        """Open guided Stage 1 approval wizard"""
+        self.ensure_one()
+        if self.state != 'stage1_review':
+            raise UserError('Application must be in Stage 1 Review before approval.')
+        return {
+            'name': 'Stage 1 Verification',
+            'type': 'ir.actions.act_window',
+            'res_model': 'national.id.approval.wizard',
+            'view_mode': 'form',
+            'view_id': self.env.ref(
+                'national_id_application.view_national_id_approval_wizard_form'
+            ).id,
+            'target': 'new',
+            'context': {
+                'default_application_id': self.id,
+                'default_stage': 'stage1',
+                'default_stage1_identity_verified': self.stage1_identity_verified,
+                'default_stage1_documents_verified': self.stage1_documents_verified,
+                'default_stage1_review_notes': self.stage1_review_notes,
+            },
+        }
     
     def action_approve_stage1(self):
         """Approve application at Stage 1"""
         self.ensure_one()
+        if self.state != 'stage1_review':
+            raise UserError('Application must be in Stage 1 Review before approval.')
+        if not self.stage1_identity_verified or not self.stage1_documents_verified:
+            raise UserError(
+                'Complete Stage 1 verification checklist before approving.'
+            )
         self.write({
             'state': 'stage1_approved',
             'stage1_approver_id': self.env.user.id,
             'stage1_approval_date': fields.Datetime.now(),
         })
         self.message_post(
-            body=f'Stage 1 approved by {self.env.user.name}',
+            body=f'Stage 1 approved by {self.env.user.name}.',
             subject='Stage 1 Approved'
         )
     
@@ -242,10 +320,38 @@ class NationalIdApplication(models.Model):
             body='Application submitted for Stage 2 review.',
             subject='Stage 2 Review Started'
         )
+
+    def action_open_stage2_approval_wizard(self):
+        """Open guided Stage 2 approval wizard"""
+        self.ensure_one()
+        if self.state != 'stage2_review':
+            raise UserError('Application must be in Stage 2 Review before final approval.')
+        return {
+            'name': 'Stage 2 Verification',
+            'type': 'ir.actions.act_window',
+            'res_model': 'national.id.approval.wizard',
+            'view_mode': 'form',
+            'view_id': self.env.ref(
+                'national_id_application.view_national_id_approval_wizard_form'
+            ).id,
+            'target': 'new',
+            'context': {
+                'default_application_id': self.id,
+                'default_stage': 'stage2',
+                'default_stage2_data_crosschecked': self.stage2_data_crosschecked,
+                'default_stage2_review_notes': self.stage2_review_notes,
+            },
+        }
     
     def action_approve_stage2(self):
         """Approve application at Stage 2 - Final approval"""
         self.ensure_one()
+        if self.state != 'stage2_review':
+            raise UserError('Application must be in Stage 2 Review before final approval.')
+        if not self.stage2_data_crosschecked:
+            raise UserError(
+                'Complete Stage 2 cross-check before final approval.'
+            )
         self.write({
             'state': 'approved',
             'stage2_approver_id': self.env.user.id,
@@ -256,14 +362,43 @@ class NationalIdApplication(models.Model):
             subject='Application Fully Approved'
         )
     
-    def action_reject(self):
-        """Reject the application"""
+    def action_open_rejection_wizard(self):
+        """Open popup wizard to capture rejection category and reason"""
         self.ensure_one()
-        if not self.rejection_reason:
+        return {
+            'name': 'Reject Application',
+            'type': 'ir.actions.act_window',
+            'res_model': 'national.id.rejection.wizard',
+            'view_mode': 'form',
+            'view_id': self.env.ref(
+                'national_id_application.view_national_id_rejection_wizard_form'
+            ).id,
+            'target': 'new',
+            'context': {
+                'default_application_id': self.id,
+            },
+        }
+
+    def action_reject_with_reason(self, category, reason):
+        """Reject application with category and reason from wizard"""
+        self.ensure_one()
+        clean_reason = (reason or '').strip()
+        if not clean_reason:
             raise UserError('Please provide a rejection reason.')
-        self.write({'state': 'rejected'})
+
+        category_label = dict(self.REJECTION_CATEGORIES).get(category, 'Other')
+        self.write({
+            'state': 'rejected',
+            'rejection_category': category or 'other',
+            'rejection_reason': clean_reason,
+            'rejected_by_id': self.env.user.id,
+            'rejected_on': fields.Datetime.now(),
+        })
         self.message_post(
-            body=f'Application rejected by {self.env.user.name}. Reason: {self.rejection_reason}',
+            body=(
+                f'Application rejected by {self.env.user.name}. '
+                f'Category: {category_label}. Reason: {clean_reason}'
+            ),
             subject='Application Rejected'
         )
     
@@ -276,7 +411,15 @@ class NationalIdApplication(models.Model):
             'stage1_approval_date': False,
             'stage2_approver_id': False,
             'stage2_approval_date': False,
+            'stage1_identity_verified': False,
+            'stage1_documents_verified': False,
+            'stage1_review_notes': False,
+            'stage2_data_crosschecked': False,
+            'stage2_review_notes': False,
+            'rejection_category': False,
             'rejection_reason': False,
+            'rejected_by_id': False,
+            'rejected_on': False,
         })
         self.message_post(
             body=f'Application reset to New by {self.env.user.name}',

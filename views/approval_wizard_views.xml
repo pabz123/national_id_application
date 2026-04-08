@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_national_id_approval_wizard_form" model="ir.ui.view">
+        <field name="name">national.id.approval.wizard.form</field>
+        <field name="model">national.id.approval.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Approval Verification">
+                <group>
+                    <field name="application_id" readonly="1"/>
+                    <field name="stage" readonly="1"/>
+                </group>
+
+                <group string="Stage 1 Verification" invisible="stage != 'stage1'">
+                    <field name="stage1_identity_verified"/>
+                    <field name="stage1_documents_verified"/>
+                    <field name="stage1_review_notes" placeholder="Optional notes from Stage 1 review..."/>
+                </group>
+
+                <group string="Stage 2 Verification" invisible="stage != 'stage2'">
+                    <field name="stage2_data_crosschecked"/>
+                    <field name="stage2_review_notes" placeholder="Optional notes from Stage 2 review..."/>
+                </group>
+
+                <footer>
+                    <button name="action_confirm_approval"
+                            string="Confirm Approval"
+                            type="object"
+                            class="btn-success"/>
+                    <button string="Cancel"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

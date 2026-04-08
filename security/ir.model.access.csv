@@ -3,3 +3,5 @@ access_national_id_application_user,national.id.application.user,model_national_
 access_national_id_application_public,national.id.application.public,model_national_id_application,,1,1,1,0
 access_national_id_district_user,national.id.district.user,model_national_id_district,base.group_user,1,1,1,1
 access_national_id_district_public,national.id.district.public,model_national_id_district,,1,0,0,0
+access_national_id_approval_wizard_user,national.id.approval.wizard.user,model_national_id_approval_wizard,base.group_user,1,1,1,1
+access_national_id_rejection_wizard_user,national.id.rejection.wizard.user,model_national_id_rejection_wizard,base.group_user,1,1,1,1

@@ -14,6 +14,8 @@
         'security/ir.model.access.csv',
         'data/districts_data.xml',
         'views/district_views.xml',
+        'views/approval_wizard_views.xml',
+        'views/rejection_wizard_views.xml',
         'views/national_id_views.xml',
         'views/national_id_menus.xml',
         'templates/application_form.xml',

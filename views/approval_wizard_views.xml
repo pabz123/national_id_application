@@ -10,6 +10,13 @@
                     <field name="stage" readonly="1"/>
                 </group>
 
+                <group string="Caution: Missing Required Fields" invisible="not has_missing_required_fields">
+                    <field name="has_missing_required_fields" invisible="1"/>
+                    <field name="missing_required_fields" readonly="1"/>
+                    <field name="allow_incomplete_approval"/>
+                    <field name="incomplete_approval_reason" placeholder="Explain why this application is being approved despite missing required fields..."/>
+                </group>
+
                 <group string="Stage 1 Verification" invisible="stage != 'stage1'">
                     <field name="stage1_identity_verified"/>
                     <field name="stage1_documents_verified"/>

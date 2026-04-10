@@ -19,11 +19,14 @@ class NationalIdApplication(models.Model):
         ('other', 'Other'),
     ]
     
-    # SQL Constraints
-    _sql_constraints = [
-        ('email_unique', 'UNIQUE(email)', 'This email address is already registered!'),
-        ('phone_unique', 'UNIQUE(phone)', 'This phone number is already registered!'),
-    ]
+    _email_unique = models.Constraint(
+        'UNIQUE(email)',
+        'This email address is already registered!'
+    )
+    _phone_unique = models.Constraint(
+        'UNIQUE(phone)',
+        'This phone number is already registered!'
+    )
 
     # ========== BASIC INFORMATION ==========
     
@@ -166,6 +169,12 @@ class NationalIdApplication(models.Model):
         string='Stage 1 Review Notes'
     )
 
+    stage1_incomplete_override_reason = fields.Text(
+        string='Stage 1 Incomplete Approval Reason',
+        readonly=True,
+        tracking=True
+    )
+
     stage2_data_crosschecked = fields.Boolean(
         string='Records cross-check completed',
         tracking=True
@@ -173,6 +182,12 @@ class NationalIdApplication(models.Model):
 
     stage2_review_notes = fields.Text(
         string='Stage 2 Review Notes'
+    )
+
+    stage2_incomplete_override_reason = fields.Text(
+        string='Stage 2 Incomplete Approval Reason',
+        readonly=True,
+        tracking=True
     )
 
     rejection_category = fields.Selection(
@@ -256,6 +271,34 @@ class NationalIdApplication(models.Model):
                     'national.id.application'
                 ) or 'New'
         return super().create(vals_list)
+
+    def _get_missing_required_field_labels(self):
+        """Return labels of required application fields that are currently missing."""
+        self.ensure_one()
+        required_checks = [
+            ('full_name', 'Full Name'),
+            ('date_of_birth', 'Date of Birth'),
+            ('gender', 'Gender'),
+            ('nationality_id', 'Nationality'),
+            ('district_name', 'District of Origin'),
+            ('phone', 'Phone Number'),
+            ('email', 'Email Address'),
+            ('photo', 'Passport Photo'),
+            ('lc_letter', 'LC Reference Letter'),
+        ]
+
+        return [
+            label for field_name, label in required_checks if not self[field_name]
+        ]
+
+    def _ensure_required_data_for_review(self):
+        """Block workflow transitions if core application data is incomplete."""
+        missing_fields = self._get_missing_required_field_labels()
+        if missing_fields:
+            raise UserError(
+                'Please complete all required application fields before continuing. '
+                f'Missing: {", ".join(missing_fields)}'
+            )
     
     # ========== WORKFLOW METHODS ==========
     
@@ -296,6 +339,18 @@ class NationalIdApplication(models.Model):
         self.ensure_one()
         if self.state != 'stage1_review':
             raise UserError('Application must be in Stage 1 Review before approval.')
+        missing_fields = self._get_missing_required_field_labels()
+        allow_incomplete = bool(self.env.context.get('allow_incomplete_approval'))
+        override_reason = (self.env.context.get('incomplete_approval_reason') or '').strip()
+        if missing_fields and not allow_incomplete:
+            raise UserError(
+                'This application has missing required fields. '
+                'Use the approval override and provide a valid reason.'
+            )
+        if missing_fields and not override_reason:
+            raise UserError(
+                'Please provide a valid reason for approving an incomplete application.'
+            )
         if not self.stage1_identity_verified or not self.stage1_documents_verified:
             raise UserError(
                 'Complete Stage 1 verification checklist before approving.'
@@ -304,11 +359,22 @@ class NationalIdApplication(models.Model):
             'state': 'stage1_approved',
             'stage1_approver_id': self.env.user.id,
             'stage1_approval_date': fields.Datetime.now(),
+            'stage1_incomplete_override_reason': override_reason if missing_fields else False,
         })
-        self.message_post(
-            body=f'Stage 1 approved by {self.env.user.name}.',
-            subject='Stage 1 Approved'
-        )
+        if missing_fields:
+            self.message_post(
+                body=(
+                    f'Stage 1 approved by {self.env.user.name} with missing fields '
+                    f'({", ".join(missing_fields)}). '
+                    f'Override reason: {override_reason}'
+                ),
+                subject='Stage 1 Approved (Override)'
+            )
+        else:
+            self.message_post(
+                body=f'Stage 1 approved by {self.env.user.name}.',
+                subject='Stage 1 Approved'
+            )
     
     def action_submit_stage2(self):
         """Move application to Stage 2 Review"""
@@ -348,6 +414,18 @@ class NationalIdApplication(models.Model):
         self.ensure_one()
         if self.state != 'stage2_review':
             raise UserError('Application must be in Stage 2 Review before final approval.')
+        missing_fields = self._get_missing_required_field_labels()
+        allow_incomplete = bool(self.env.context.get('allow_incomplete_approval'))
+        override_reason = (self.env.context.get('incomplete_approval_reason') or '').strip()
+        if missing_fields and not allow_incomplete:
+            raise UserError(
+                'This application has missing required fields. '
+                'Use the approval override and provide a valid reason.'
+            )
+        if missing_fields and not override_reason:
+            raise UserError(
+                'Please provide a valid reason for approving an incomplete application.'
+            )
         if not self.stage2_data_crosschecked:
             raise UserError(
                 'Complete Stage 2 cross-check before final approval.'
@@ -356,11 +434,23 @@ class NationalIdApplication(models.Model):
             'state': 'approved',
             'stage2_approver_id': self.env.user.id,
             'stage2_approval_date': fields.Datetime.now(),
+            'stage2_incomplete_override_reason': override_reason if missing_fields else False,
         })
-        self.message_post(
-            body=f'Stage 2 approved by {self.env.user.name}. Application fully approved.',
-            subject='Application Fully Approved'
-        )
+        if missing_fields:
+            self.message_post(
+                body=(
+                    f'Stage 2 approved by {self.env.user.name} with missing fields '
+                    f'({", ".join(missing_fields)}). '
+                    f'Override reason: {override_reason}. '
+                    'Application fully approved.'
+                ),
+                subject='Application Fully Approved (Override)'
+            )
+        else:
+            self.message_post(
+                body=f'Stage 2 approved by {self.env.user.name}. Application fully approved.',
+                subject='Application Fully Approved'
+            )
     
     def action_open_rejection_wizard(self):
         """Open popup wizard to capture rejection category and reason"""
@@ -414,8 +504,10 @@ class NationalIdApplication(models.Model):
             'stage1_identity_verified': False,
             'stage1_documents_verified': False,
             'stage1_review_notes': False,
+            'stage1_incomplete_override_reason': False,
             'stage2_data_crosschecked': False,
             'stage2_review_notes': False,
+            'stage2_incomplete_override_reason': False,
             'rejection_category': False,
             'rejection_reason': False,
             'rejected_by_id': False,

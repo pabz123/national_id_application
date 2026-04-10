@@ -122,12 +122,14 @@
                                     <field name="stage1_identity_verified" readonly="state not in ['stage1_review']"/>
                                     <field name="stage1_documents_verified" readonly="state not in ['stage1_review']"/>
                                     <field name="stage1_review_notes" readonly="state not in ['stage1_review']"/>
+                                    <field name="stage1_incomplete_override_reason" readonly="1" invisible="not stage1_incomplete_override_reason"/>
                                     <field name="stage1_approver_id"/>
                                     <field name="stage1_approval_date"/>
                                 </group>
                                 <group string="Stage 2 Approval">
                                     <field name="stage2_data_crosschecked" readonly="state not in ['stage2_review']"/>
                                     <field name="stage2_review_notes" readonly="state not in ['stage2_review']"/>
+                                    <field name="stage2_incomplete_override_reason" readonly="1" invisible="not stage2_incomplete_override_reason"/>
                                     <field name="stage2_approver_id"/>
                                     <field name="stage2_approval_date"/>
                                 </group>
@@ -143,7 +145,11 @@
                 </sheet>
                 
                 <!-- Chatter for logging approval messages -->
-                <chatter/>
+                <chatter>
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </chatter>
             </form>
         </field>
     </record>

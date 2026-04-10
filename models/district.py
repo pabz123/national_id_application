@@ -18,7 +18,7 @@ class NationalIdDistrict(models.Model):
         required=True
     )
     
-    _sql_constraints = [
-        ('name_country_unique', 'UNIQUE(name, country_id)', 
-         'This district already exists for this country!'),
-    ]
+    _name_country_unique = models.Constraint(
+        'UNIQUE(name, country_id)',
+        'This district already exists for this country!'
+    )

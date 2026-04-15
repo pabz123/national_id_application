@@ -49,7 +49,7 @@ Navigate to: **National ID** → **Applications** → **All Applications**
 
 - **Odoo Version**: 19.0
 - **License**: LGPL-3
-- **Dependencies**: base, mail, web, portal
+- **Dependencies**: base, mail, web, portal, website
 
 ## Author
 

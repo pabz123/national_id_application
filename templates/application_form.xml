@@ -3,7 +3,7 @@
 
     <!-- =============== APPLICATION FORM TEMPLATE =============== -->
     <template id="application_form_template" name="National ID Application Form">
-        <t t-call="website.layout">
+        <t t-call="web.frontend_layout">
             <div id="wrap" class="oe_structure">
                 <div class="container mt-5 mb-5">
                     <div class="row">
@@ -222,7 +222,7 @@
     
     <!-- =============== SUCCESS PAGE TEMPLATE =============== -->
     <template id="application_success_template" name="Application Success">
-        <t t-call="website.layout">
+        <t t-call="web.frontend_layout">
             <div id="wrap" class="oe_structure">
                 <div class="container mt-5 mb-5">
                     <div class="row">

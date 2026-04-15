@@ -19,13 +19,14 @@ class NationalIdApplication(models.Model):
         ('other', 'Other'),
     ]
     
-    #constraints to ensure email and phone uniqueness across applications
-    _sql_constraints = [
-    ('email_unique', 'UNIQUE(email)', 
-     'This email address is already registered!'),
-    ('phone_unique', 'UNIQUE(phone)', 
-     'This phone number is already registered!')
-    ]   
+    _email_unique = models.Constraint(
+        'UNIQUE(email)',
+        'This email address is already registered!'
+    )
+    _phone_unique = models.Constraint(
+        'UNIQUE(phone)',
+        'This phone number is already registered!'
+    )
 
     # ========== BASIC INFORMATION ==========
     

@@ -9,7 +9,7 @@
         national ID applications with a backend approval workflow.
     ''',
     'author': 'Precious Mulungi Pabire',
-    'depends':  ['base', 'mail', 'web', 'portal'],
+    'depends':  ['base', 'mail', 'web', 'portal', 'website'],
     'data': [
         'security/ir.model.access.csv',
         'data/districts_data.xml',
@@ -18,6 +18,7 @@
         'views/rejection_wizard_views.xml',
         'views/national_id_views.xml',
         'views/national_id_menus.xml',
+        'views/website_menu.xml',
         'templates/application_form.xml',
     ],
     'installable': True,

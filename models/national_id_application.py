@@ -60,6 +60,8 @@ class NationalIdApplication(models.Model):
         string='District Name', required=True, tracking=True,
         help='Name of district'
     )
+    mobile_user_id = fields.Many2one(
+        'national.id.mobile.user', string='Mobile Account', readonly=True)
     phone = fields.Char(string='Phone Number', required=True, tracking=True)
     email = fields.Char(string='Email Address', required=True, tracking=True)
 

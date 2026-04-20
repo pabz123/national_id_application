@@ -42,35 +42,41 @@
                         string="Submit for Stage 1"
                         type="object"
                         class="btn-primary"
+                        groups="national_id_application.group_national_id_officer,national_id_application.group_national_id_admin"
                         invisible="state != 'new'"/>
                     
                     <button name="action_open_stage1_approval_wizard"
                         string="Approve Stage 1"
                         type="object"
                         class="btn-success"
+                        groups="national_id_application.group_national_id_stage1_approver,national_id_application.group_national_id_admin"
                         invisible="state != 'stage1_review'"/>
                     
                     <button name="action_submit_stage2"
                         string="Submit for Stage 2"
                         type="object"
                         class="btn-primary"
+                        groups="national_id_application.group_national_id_stage1_approver,national_id_application.group_national_id_admin"
                         invisible="state != 'stage1_approved'"/>
                     
                     <button name="action_open_stage2_approval_wizard"
                         string="Approve Stage 2 (Final)"
                         type="object"
                         class="btn-success"
+                        groups="national_id_application.group_national_id_stage2_approver,national_id_application.group_national_id_admin"
                         invisible="state != 'stage2_review'"/>
                     
                     <button name="action_open_rejection_wizard"
                         string="Reject"
                         type="object"
                         class="btn-danger"
+                        groups="national_id_application.group_national_id_stage1_approver,national_id_application.group_national_id_stage2_approver,national_id_application.group_national_id_admin"
                         invisible="state in ['approved', 'rejected']"/>
                     
                     <button name="action_reset_to_new"
                         string="Reset to New"
                         type="object"
+                        groups="national_id_application.group_national_id_admin"
                         invisible="state != 'rejected'"/>
                     
                     <field name="state" widget="statusbar"
@@ -99,6 +105,17 @@
                             <field name="district_id" domain="[('country_id', '=', nationality_id)]" readonly="1"/>
                             <field name="phone"/>
                             <field name="email"/>
+                        </group>
+                    </group>
+
+                    <group string="Workflow Tracking">
+                        <group>
+                            <field name="create_uid" string="Created By" readonly="1"/>
+                            <field name="create_date" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="current_stage_label" readonly="1"/>
+                            <field name="pending_reviewer_ids" widget="many2many_tags" readonly="1"/>
                         </group>
                     </group>
                     

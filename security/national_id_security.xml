@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="module_category_national_id" model="ir.module.category">
+        <field name="name">National ID</field>
+        <field name="sequence">65</field>
+    </record>
+
+    <record id="res_groups_privilege_national_id" model="res.groups.privilege">
+        <field name="name">National ID</field>
+        <field name="category_id" ref="national_id_application.module_category_national_id"/>
+    </record>
+
+    <record id="group_national_id_officer" model="res.groups">
+        <field name="name">Officer</field>
+        <field name="privilege_id" ref="national_id_application.res_groups_privilege_national_id"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="group_national_id_stage1_approver" model="res.groups">
+        <field name="name">Stage 1 Approver</field>
+        <field name="privilege_id" ref="national_id_application.res_groups_privilege_national_id"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="group_national_id_stage2_approver" model="res.groups">
+        <field name="name">Stage 2 Approver</field>
+        <field name="privilege_id" ref="national_id_application.res_groups_privilege_national_id"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="group_national_id_admin" model="res.groups">
+        <field name="name">Admin</field>
+        <field name="privilege_id" ref="national_id_application.res_groups_privilege_national_id"/>
+        <field name="implied_ids" eval="[
+            (4, ref('base.group_user')),
+            (4, ref('national_id_application.group_national_id_officer')),
+            (4, ref('national_id_application.group_national_id_stage1_approver')),
+            (4, ref('national_id_application.group_national_id_stage2_approver'))
+        ]"/>
+    </record>
+
+    <record id="rule_nid_app_officer_read_all" model="ir.rule">
+        <field name="name">National ID Officer: read applications</field>
+        <field name="model_id" ref="model_national_id_application"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('national_id_application.group_national_id_officer'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="rule_nid_app_officer_create" model="ir.rule">
+        <field name="name">National ID Officer: create applications</field>
+        <field name="model_id" ref="model_national_id_application"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('national_id_application.group_national_id_officer'))]"/>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="rule_nid_app_officer_write_draft" model="ir.rule">
+        <field name="name">National ID Officer: edit draft/rejected applications</field>
+        <field name="model_id" ref="model_national_id_application"/>
+        <field name="domain_force">[('state', 'in', ['new', 'rejected'])]</field>
+        <field name="groups" eval="[(4, ref('national_id_application.group_national_id_officer'))]"/>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="rule_nid_app_stage1_read" model="ir.rule">
+        <field name="name">Stage 1 Approver: read stage 1 and downstream applications</field>
+        <field name="model_id" ref="model_national_id_application"/>
+        <field name="domain_force">[('state', 'in', ['stage1_review', 'stage1_approved', 'stage2_review', 'approved', 'rejected'])]</field>
+        <field name="groups" eval="[(4, ref('national_id_application.group_national_id_stage1_approver'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="rule_nid_app_stage1_write" model="ir.rule">
+        <field name="name">Stage 1 Approver: write stage 1 pipeline applications</field>
+        <field name="model_id" ref="model_national_id_application"/>
+        <field name="domain_force">[('state', 'in', ['stage1_review', 'stage1_approved'])]</field>
+        <field name="groups" eval="[(4, ref('national_id_application.group_national_id_stage1_approver'))]"/>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="rule_nid_app_stage2_read" model="ir.rule">
+        <field name="name">Stage 2 Approver: read stage 2/final/rejected applications</field>
+        <field name="model_id" ref="model_national_id_application"/>
+        <field name="domain_force">[('state', 'in', ['stage2_review', 'approved', 'rejected'])]</field>
+        <field name="groups" eval="[(4, ref('national_id_application.group_national_id_stage2_approver'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="rule_nid_app_stage2_write" model="ir.rule">
+        <field name="name">Stage 2 Approver: write stage 2 review applications</field>
+        <field name="model_id" ref="model_national_id_application"/>
+        <field name="domain_force">[('state', '=', 'stage2_review')]</field>
+        <field name="groups" eval="[(4, ref('national_id_application.group_national_id_stage2_approver'))]"/>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="rule_nid_app_admin_all" model="ir.rule">
+        <field name="name">National ID Admin: full application access</field>
+        <field name="model_id" ref="model_national_id_application"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('national_id_application.group_national_id_admin'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+</odoo>

@@ -1,16 +1,13 @@
 # -*- coding: utf-8 -*-
-{ 
+{
     'name': 'National ID Application',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.1.0',
     'category': 'Government',
     'summary': 'Online National ID Application Portal',
-    'description': '''
-        A customized web interface for processing online
-        national ID applications with a backend approval workflow.
-    ''',
     'author': 'Precious Mulungi Pabire',
-    'depends':  ['base', 'mail', 'web', 'portal', 'website'],
+    'depends': ['base', 'mail', 'web', 'portal', 'website'],
     'data': [
+        'security/national_id_security.xml',
         'security/ir.model.access.csv',
         'data/districts_data.xml',
         'views/district_views.xml',

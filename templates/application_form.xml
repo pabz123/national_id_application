@@ -12,6 +12,13 @@
                             <p class="text-center text-muted mb-5">
                                 Please fill in all required fields accurately.
                             </p>
+
+                            <div class="alert alert-danger" t-if="error_message" role="alert">
+                                <t t-esc="error_message"/>
+                                <div class="small mt-2">
+                                    Please check your entries and re-upload required files before submitting again.
+                                </div>
+                            </div>
                             
                             <form action="/national-id/submit" method="POST" enctype="multipart/form-data" class="o_mark_required" id="application_form">
                                 
@@ -20,12 +27,14 @@
                                 
                                 <div class="mb-3">
                                     <label for="full_name" class="form-label">Full Name *</label>
-                                    <input type="text" class="form-control" id="full_name" name="full_name" required="required"/>
+                                    <input type="text" class="form-control" id="full_name" name="full_name" required="required"
+                                           t-att-value="form_data.get('full_name', '')"/>
                                 </div>
                                 
                                 <div class="mb-3">
                                     <label for="date_of_birth" class="form-label">Date of Birth *</label>
-                                    <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" required="required" onchange="validateDateOfBirth()"/>
+                                    <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" required="required"
+                                           onchange="validateDateOfBirth()" t-att-value="form_data.get('date_of_birth', '')"/>
                                     <small class="text-muted">Cannot be a future date</small>
                                     <div id="dob-error" class="invalid-feedback" style="display: none;"></div>
                                 </div>
@@ -34,9 +43,9 @@
                                     <label for="gender" class="form-label">Gender *</label>
                                     <select class="form-select" id="gender" name="gender" required="required">
                                         <option value="">-- Select Gender --</option>
-                                        <option value="male">Male</option>
-                                        <option value="female">Female</option>
-                                        <option value="other">Other</option>
+                                        <option value="male" t-att-selected="form_data.get('gender') == 'male' and 'selected' or None">Male</option>
+                                        <option value="female" t-att-selected="form_data.get('gender') == 'female' and 'selected' or None">Female</option>
+                                        <option value="other" t-att-selected="form_data.get('gender') == 'other' and 'selected' or None">Other</option>
                                     </select>
                                 </div>
                                 
@@ -45,7 +54,9 @@
                                     <select class="form-select" id="nationality_id" name="nationality_id" required="required" onchange="filterDistricts()">
                                         <option value="">-- Select Country --</option>
                                         <t t-foreach="countries" t-as="country">
-                                            <option t-att-value="country.id" t-att-data-country-id="country.id">
+                                            <option t-att-value="country.id"
+                                                    t-att-data-country-id="country.id"
+                                                    t-att-selected="str(country.id) == str(form_data.get('nationality_id') or '') and 'selected' or None">
                                                 <t t-esc="country.name"/>
                                             </option>
                                         </t>
@@ -54,7 +65,8 @@
                                 
                                 <div class="mb-3">
                                     <label for="existing_nin" class="form-label">Existing NIN (if renewal/replacement)</label>
-                                    <input type="text" class="form-control" id="existing_nin" name="existing_nin" placeholder="CM00000000000"/>
+                                    <input type="text" class="form-control" id="existing_nin" name="existing_nin" placeholder="CM00000000000"
+                                           t-att-value="form_data.get('existing_nin', '')"/>
                                     <small class="form-text text-muted">National Identification Number - Fill only if renewing or replacing lost ID</small>
                                 </div>
                                 
@@ -63,7 +75,8 @@
                                 
                                 <div class="mb-3">
                                     <label for="district_name" class="form-label">District of Origin *</label>
-                                    <input type="text" class="form-control" id="district_name" name="district_name" list="district_list" required="required"/>
+                                    <input type="text" class="form-control" id="district_name" name="district_name" list="district_list" required="required"
+                                           t-att-value="form_data.get('district_name', '')"/>
                                     <datalist id="district_list">
                                         <t t-foreach="districts" t-as="district">
                                             <option t-att-value="district.name" 
@@ -73,18 +86,28 @@
                                         </t>
                                     </datalist>
                                     <small class="text-muted">Select from the list or type your district name if not available</small>
-                                    <input type="hidden" id="district_id" name="district_id" value=""/>
+                                    <input type="hidden" id="district_id" name="district_id" t-att-value="form_data.get('district_id', '')"/>
                                 </div>
                                 
                                 <div class="mb-3">
                                     <label for="phone" class="form-label">Phone Number *</label>
-                                    <input type="tel" class="form-control" id="phone" name="phone" required="required" placeholder="+256700000000"/>
+                                    <input type="tel" id="phone" name="phone" required="required" placeholder="+256700000000"
+                                           t-attf-class="form-control #{'is-invalid' if field_errors.get('phone') else ''}"
+                                           t-att-value="form_data.get('phone', '')"/>
+                                    <div class="invalid-feedback d-block" t-if="field_errors.get('phone')">
+                                        <t t-esc="field_errors.get('phone')"/>
+                                    </div>
                                     <small class="text-muted">Format: +256700000000</small>
                                 </div>
                                 
                                 <div class="mb-3">
                                     <label for="email" class="form-label">Email Address *</label>
-                                    <input type="email" class="form-control" id="email" name="email" required="required" placeholder="your.email@example.com"/>
+                                    <input type="email" id="email" name="email" required="required" placeholder="your.email@example.com"
+                                           t-attf-class="form-control #{'is-invalid' if field_errors.get('email') else ''}"
+                                           t-att-value="form_data.get('email', '')"/>
+                                    <div class="invalid-feedback d-block" t-if="field_errors.get('email')">
+                                        <t t-esc="field_errors.get('email')"/>
+                                    </div>
                                 </div>
                                 
                                 <!-- Required Documents -->

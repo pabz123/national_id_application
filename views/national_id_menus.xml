@@ -4,18 +4,21 @@
     <!-- Main menu item in the App Drawer -->
     <menuitem id="menu_national_id_root"
         name="National ID"
+        groups="national_id_application.group_national_id_officer,national_id_application.group_national_id_stage1_approver,national_id_application.group_national_id_stage2_approver,national_id_application.group_national_id_admin"
         sequence="10"/>
 
     <!-- Submenu: Applications -->
     <menuitem id="menu_national_id_applications"
         name="Applications"
         parent="menu_national_id_root"
+        groups="national_id_application.group_national_id_officer,national_id_application.group_national_id_stage1_approver,national_id_application.group_national_id_stage2_approver,national_id_application.group_national_id_admin"
         sequence="10"/>
 
     <!-- Submenu: Configuration -->
     <menuitem id="menu_national_id_config"
         name="Configuration"
         parent="menu_national_id_root"
+        groups="national_id_application.group_national_id_admin"
         sequence="100"/>
 
     <!-- Action to open the list view -->
@@ -35,6 +38,7 @@
         name="All Applications"
         parent="menu_national_id_applications"
         action="action_national_id_application"
+        groups="national_id_application.group_national_id_officer,national_id_application.group_national_id_stage1_approver,national_id_application.group_national_id_stage2_approver,national_id_application.group_national_id_admin"
         sequence="10"/>
 
     <!-- Districts menu -->
@@ -42,6 +46,7 @@
         name="Districts"
         parent="menu_national_id_config"
         action="action_district"
+        groups="national_id_application.group_national_id_admin"
         sequence="10"/>
 
 </odoo>

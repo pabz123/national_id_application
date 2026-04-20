@@ -17,6 +17,13 @@ An Odoo 19 module for processing online national ID applications with a public w
 - **Rejection Handling**: Applications can be rejected with reasons
 - **Reset Capability**: Rejected applications can be reset
 
+### Mobile API (Flutter)
+- `POST /api/mobile/signup` - create mobile account
+- `POST /api/mobile/login` - authenticate and receive bearer token
+- `GET /api/mobile/metadata` - countries + districts for form dropdowns
+- `POST /api/mobile/application/submit` - submit application with multipart files
+- `GET /api/mobile/application/track?reference=<tracking_number>` - fetch status by reference
+
 ### Application Fields
 - Full Name
 - Date of Birth
@@ -50,6 +57,17 @@ Navigate to: **National ID** → **Applications** → **All Applications**
 - **Odoo Version**: 19.0
 - **License**: LGPL-3
 - **Dependencies**: base, mail, web, portal, website
+
+## Flutter App (BLoC)
+
+Flutter source is under `flutter_app/` with layered architecture:
+- `features/auth` - signup/login + local session persistence
+- `features/application` - form submission + file upload
+- `features/tracking` - tracking number status checks
+
+If Flutter tooling is installed on your machine, run this from `flutter_app/`:
+1. `flutter pub get`
+2. `flutter run`
 
 ## Author
 

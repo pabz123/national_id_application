@@ -65,6 +65,31 @@ class NationalIdMobileApiController(http.Controller):
             return {'success': False, 'message': 'An account with this phone number already exists.'}
         return {'success': False, 'message': message or 'Request failed.'}
 
+    def _build_stage_timeline(self, status_code):
+        ordered = [
+            ('new', 'Pending'),
+            ('stage1_review', 'Verified'),
+            ('stage2_review', 'Senior Approval'),
+            ('approved', 'Final Approval'),
+            ('rejected', 'Rejected'),
+        ]
+        if status_code == 'rejected':
+            return [
+                {'code': code, 'label': label, 'completed': code == 'rejected'}
+                for code, label in ordered
+            ]
+        reached_states = {'new'}
+        if status_code in {'stage1_review', 'stage1_approved', 'stage2_review', 'approved'}:
+            reached_states.add('stage1_review')
+        if status_code in {'stage1_approved', 'stage2_review', 'approved'}:
+            reached_states.add('stage2_review')
+        if status_code == 'approved':
+            reached_states.add('approved')
+        return [
+            {'code': code, 'label': label, 'completed': code in reached_states}
+            for code, label in ordered
+        ]
+
     @http.route('/api/mobile/signup', type='http', auth='public', methods=['POST'], csrf=False)
     def mobile_signup(self, **kwargs):
         payload = self._read_json_payload()
@@ -172,8 +197,33 @@ class NationalIdMobileApiController(http.Controller):
                 status=400,
             )
 
+    @http.route('/api/mobile/metadata', type='http', auth='public', methods=['GET'], csrf=False)
+    def mobile_form_metadata(self, **kwargs):
+        countries = request.env['res.country'].sudo().search([], order='name')
+        districts = request.env['national.id.district'].sudo().search([], order='name')
+        return self._json_response({
+            'success': True,
+            'countries': [
+                {'id': country.id, 'name': country.name}
+                for country in countries
+            ],
+            'districts': [
+                {
+                    'id': district.id,
+                    'name': district.name,
+                    'country_id': district.country_id.id if district.country_id else None,
+                }
+                for district in districts
+            ],
+        })
+
+    @http.route('/api/mobile/application/track', type='http', auth='public', methods=['GET'], csrf=False)
+    def mobile_track_application_query(self, **kwargs):
+        reference = kwargs.get('reference')
+        return self.mobile_track_application(reference)
+
     @http.route(
-        '/api/mobile/application/track/<string:reference>',
+        '/api/mobile/application/track/<path:reference>',
         type='http',
         auth='public',
         methods=['GET'],
@@ -204,6 +254,7 @@ class NationalIdMobileApiController(http.Controller):
                 'full_name': application.full_name,
                 'status_code': application.state,
                 'status': self.STATE_LABELS.get(application.state, application.state),
+                'timeline': self._build_stage_timeline(application.state),
                 'rejection_reason': application.rejection_reason or '',
             },
         })

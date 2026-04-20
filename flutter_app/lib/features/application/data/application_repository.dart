@@ -39,10 +39,15 @@ class ApplicationRepository {
   final http.Client _client;
 
   Future<FormMetadata> fetchMetadata() async {
-    final uri = Uri.parse('${ApiConfig.baseUrl}/api/mobile/metadata');
+    final uri = ApiConfig.buildUri('/api/mobile/metadata');
     final response = await _client.get(
       uri,
       headers: ApiConfig.jsonHeaders(),
+    ).timeout(
+      ApiConfig.requestTimeout,
+      onTimeout: () => throw Exception(
+        'Metadata request timed out. Check API URL or backend server status.',
+      ),
     );
     final data = _decodeJson(response.body);
     if (response.statusCode >= 400 || data['success'] != true) {
@@ -55,10 +60,9 @@ class ApplicationRepository {
     required String token,
     required ApplicationFormRequest request,
   }) async {
-    final uri = Uri.parse('${ApiConfig.baseUrl}/api/mobile/application/submit');
+    final uri = ApiConfig.buildUri('/api/mobile/application/submit');
     final multipartRequest = http.MultipartRequest('POST', uri);
     multipartRequest.headers.addAll({
-      'X-Odoo-Database': ApiConfig.databaseName,
       'Authorization': 'Bearer $token',
     });
     multipartRequest.fields.addAll({
@@ -77,7 +81,12 @@ class ApplicationRepository {
     multipartRequest.files
         .add(await _toMultipartFile('lc_letter', request.lcLetterFile));
 
-    final streamed = await multipartRequest.send();
+    final streamed = await multipartRequest.send().timeout(
+      ApiConfig.requestTimeout,
+      onTimeout: () => throw Exception(
+        'Submission timed out. Check API URL or backend server status.',
+      ),
+    );
     final response = await http.Response.fromStream(streamed);
     final data = _decodeJson(response.body);
     if (response.statusCode >= 400 || data['success'] != true) {

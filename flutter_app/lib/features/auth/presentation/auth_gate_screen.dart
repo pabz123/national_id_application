@@ -65,7 +65,6 @@ class _AuthGateScreenState extends State<AuthGateScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(state.message!)),
         );
-        context.read<AuthBloc>().add(const AuthClearMessage());
       },
       child: DefaultTabController(
         length: 2,
@@ -82,10 +81,33 @@ class _AuthGateScreenState extends State<AuthGateScreen> {
           body: BlocBuilder<AuthBloc, AuthState>(
             builder: (context, state) {
               final isLoading = state.status == AuthStatus.loading;
-              return TabBarView(
+              return Column(
                 children: [
-                  _buildLoginTab(context, isLoading),
-                  _buildSignupTab(context, isLoading),
+                  if (isLoading) const LinearProgressIndicator(),
+                  if (state.message != null && state.message!.isNotEmpty)
+                    Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.errorContainer,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        state.message!,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onErrorContainer,
+                        ),
+                      ),
+                    ),
+                  Expanded(
+                    child: TabBarView(
+                      children: [
+                        _buildLoginTab(context, isLoading),
+                        _buildSignupTab(context, isLoading),
+                      ],
+                    ),
+                  ),
                 ],
               );
             },

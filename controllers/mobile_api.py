@@ -17,12 +17,24 @@ class NationalIdMobileApiController(http.Controller):
         'rejected': 'Rejected',
     }
 
+    CORS_HEADERS = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': (
+            'Origin, Content-Type, Accept, Authorization, X-Odoo-Database'
+        ),
+        'Access-Control-Max-Age': '86400',
+    }
+
     def _json_response(self, payload, status=200):
-        return Response(
+        response = Response(
             json.dumps(payload),
             status=status,
             content_type='application/json;charset=utf-8',
         )
+        for key, value in self.CORS_HEADERS.items():
+            response.headers[key] = value
+        return response
 
     def _read_json_payload(self):
         return request.httprequest.get_json(silent=True) or {}
@@ -90,7 +102,11 @@ class NationalIdMobileApiController(http.Controller):
             for code, label in ordered
         ]
 
-    @http.route('/api/mobile/signup', type='http', auth='public', methods=['POST'], csrf=False)
+    @http.route('/api/mobile/<path:subpath>', type='http', auth='public', methods=['OPTIONS'], csrf=False, cors='*')
+    def mobile_options(self, subpath=None, **kwargs):
+        return self._json_response({'success': True}, status=200)
+
+    @http.route('/api/mobile/signup', type='http', auth='public', methods=['POST'], csrf=False, cors='*')
     def mobile_signup(self, **kwargs):
         payload = self._read_json_payload()
         data = payload or kwargs
@@ -119,7 +135,7 @@ class NationalIdMobileApiController(http.Controller):
                 status=400,
             )
 
-    @http.route('/api/mobile/login', type='http', auth='public', methods=['POST'], csrf=False)
+    @http.route('/api/mobile/login', type='http', auth='public', methods=['POST'], csrf=False, cors='*')
     def mobile_login(self, **kwargs):
         payload = self._read_json_payload()
         data = payload or kwargs
@@ -149,6 +165,7 @@ class NationalIdMobileApiController(http.Controller):
         auth='public',
         methods=['POST'],
         csrf=False,
+        cors='*',
     )
     def mobile_submit_application(self, **post):
         try:
@@ -197,7 +214,7 @@ class NationalIdMobileApiController(http.Controller):
                 status=400,
             )
 
-    @http.route('/api/mobile/metadata', type='http', auth='public', methods=['GET'], csrf=False)
+    @http.route('/api/mobile/metadata', type='http', auth='public', methods=['GET'], csrf=False, cors='*')
     def mobile_form_metadata(self, **kwargs):
         countries = request.env['res.country'].sudo().search([], order='name')
         districts = request.env['national.id.district'].sudo().search([], order='name')
@@ -217,7 +234,7 @@ class NationalIdMobileApiController(http.Controller):
             ],
         })
 
-    @http.route('/api/mobile/application/track', type='http', auth='public', methods=['GET'], csrf=False)
+    @http.route('/api/mobile/application/track', type='http', auth='public', methods=['GET'], csrf=False, cors='*')
     def mobile_track_application_query(self, **kwargs):
         reference = kwargs.get('reference')
         return self.mobile_track_application(reference)
@@ -228,6 +245,7 @@ class NationalIdMobileApiController(http.Controller):
         auth='public',
         methods=['GET'],
         csrf=False,
+        cors='*',
     )
     def mobile_track_application(self, reference, **kwargs):
         clean_reference = (reference or '').strip()

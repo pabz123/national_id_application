@@ -22,16 +22,21 @@ class AuthRepository {
     required String phone,
     required String password,
   }) async {
-    final uri = Uri.parse('${ApiConfig.baseUrl}/api/mobile/signup');
+    final uri = ApiConfig.buildUri('/api/mobile/signup');
     final response = await _client.post(
       uri,
-      headers: ApiConfig.jsonHeaders(),
-      body: jsonEncode({
+      headers: const {'Accept': 'application/json'},
+      body: {
         'name': name.trim(),
         'email': email.trim(),
         'phone': phone.trim(),
         'password': password,
-      }),
+      },
+    ).timeout(
+      ApiConfig.requestTimeout,
+      onTimeout: () => throw Exception(
+        'Signup timed out. Check API URL or backend server status.',
+      ),
     );
     final data = _decodeJson(response.body);
     if (response.statusCode >= 400 || data['success'] != true) {
@@ -43,14 +48,19 @@ class AuthRepository {
     required String email,
     required String password,
   }) async {
-    final uri = Uri.parse('${ApiConfig.baseUrl}/api/mobile/login');
+    final uri = ApiConfig.buildUri('/api/mobile/login');
     final response = await _client.post(
       uri,
-      headers: ApiConfig.jsonHeaders(),
-      body: jsonEncode({
+      headers: const {'Accept': 'application/json'},
+      body: {
         'email': email.trim(),
         'password': password,
-      }),
+      },
+    ).timeout(
+      ApiConfig.requestTimeout,
+      onTimeout: () => throw Exception(
+        'Login timed out. Check API URL or backend server status.',
+      ),
     );
     final data = _decodeJson(response.body);
     if (response.statusCode >= 400 || data['success'] != true) {
@@ -91,8 +101,14 @@ class AuthRepository {
   Future<void> logout() => _storage.clearSession();
 
   Map<String, dynamic> _decodeJson(String body) {
+    final text = body.trimLeft();
+    if (text.startsWith('<!DOCTYPE') || text.startsWith('<html')) {
+      return <String, dynamic>{
+        'message': 'Backend returned an HTML page. Confirm Odoo is running and API_BASE_URL/db are correct.'
+      };
+    }
     try {
-      final decoded = jsonDecode(body);
+      final decoded = jsonDecode(text);
       if (decoded is Map<String, dynamic>) {
         return decoded;
       }

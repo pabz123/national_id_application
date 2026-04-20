@@ -66,9 +66,10 @@ class TrackingRepository {
     if (cleanReference.isEmpty) {
       throw Exception('Tracking number is required.');
     }
-    final uri = Uri.parse(
-      '${ApiConfig.baseUrl}/api/mobile/application/track',
-    ).replace(queryParameters: {'reference': cleanReference});
+    final uri = ApiConfig.buildUri(
+      '/api/mobile/application/track',
+      queryParameters: {'reference': cleanReference},
+    );
     final response = await _client.get(
       uri,
       headers: ApiConfig.jsonHeaders(),

@@ -70,45 +70,102 @@ class _AuthGateScreenState extends State<AuthGateScreen> {
         length: 2,
         child: Scaffold(
           appBar: AppBar(
-            title: const Text('National ID Mobile'),
-            bottom: const TabBar(
-              tabs: [
-                Tab(text: 'Login'),
-                Tab(text: 'Signup'),
-              ],
-            ),
+            title: const Text('National ID Services'),
           ),
           body: BlocBuilder<AuthBloc, AuthState>(
             builder: (context, state) {
               final isLoading = state.status == AuthStatus.loading;
-              return Column(
-                children: [
-                  if (isLoading) const LinearProgressIndicator(),
-                  if (state.message != null && state.message!.isNotEmpty)
-                    Container(
-                      width: double.infinity,
-                      margin: const EdgeInsets.all(12),
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.errorContainer,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        state.message!,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onErrorContainer,
+              return SafeArea(
+                child: Column(
+                  children: [
+                    if (isLoading) const LinearProgressIndicator(),
+                    Expanded(
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 620),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              children: [
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 14,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE5F3EA),
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                      color: const Color(0xFFBDD9C9),
+                                    ),
+                                  ),
+                                  child: const Row(
+                                    children: [
+                                      Icon(Icons.verified_user, size: 28, color: Color(0xFF0E7C4A)),
+                                      SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          'Secure mobile access for National ID application and tracking.',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                if (state.message != null && state.message!.isNotEmpty)
+                                  Container(
+                                    width: double.infinity,
+                                    margin: const EdgeInsets.only(top: 12),
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context).colorScheme.errorContainer,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      state.message!,
+                                      style: TextStyle(
+                                        color: Theme.of(context).colorScheme.onErrorContainer,
+                                      ),
+                                    ),
+                                  ),
+                                const SizedBox(height: 12),
+                                Expanded(
+                                  child: Card(
+                                    elevation: 1,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        const Padding(
+                                          padding: EdgeInsets.fromLTRB(12, 12, 12, 0),
+                                          child: TabBar(
+                                            tabs: [
+                                              Tab(text: 'Login'),
+                                              Tab(text: 'Signup'),
+                                            ],
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: TabBarView(
+                                            children: [
+                                              _buildLoginTab(context, isLoading),
+                                              _buildSignupTab(context, isLoading),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  Expanded(
-                    child: TabBarView(
-                      children: [
-                        _buildLoginTab(context, isLoading),
-                        _buildSignupTab(context, isLoading),
-                      ],
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               );
             },
           ),
@@ -126,7 +183,10 @@ class _AuthGateScreenState extends State<AuthGateScreen> {
           children: [
             TextFormField(
               controller: _loginEmailCtrl,
-              decoration: const InputDecoration(labelText: 'Email'),
+              decoration: const InputDecoration(
+                labelText: 'Email',
+                prefixIcon: Icon(Icons.email_outlined),
+              ),
               keyboardType: TextInputType.emailAddress,
               validator: (value) {
                 final text = (value ?? '').trim();
@@ -139,7 +199,10 @@ class _AuthGateScreenState extends State<AuthGateScreen> {
             const SizedBox(height: 12),
             TextFormField(
               controller: _loginPasswordCtrl,
-              decoration: const InputDecoration(labelText: 'Password'),
+              decoration: const InputDecoration(
+                labelText: 'Password',
+                prefixIcon: Icon(Icons.lock_outline),
+              ),
               obscureText: true,
               validator: (value) {
                 if ((value ?? '').isEmpty) {
@@ -171,7 +234,10 @@ class _AuthGateScreenState extends State<AuthGateScreen> {
           children: [
             TextFormField(
               controller: _signupNameCtrl,
-              decoration: const InputDecoration(labelText: 'Full Name'),
+              decoration: const InputDecoration(
+                labelText: 'Full Name',
+                prefixIcon: Icon(Icons.person_outline),
+              ),
               validator: (value) {
                 if ((value ?? '').trim().isEmpty) {
                   return 'Name is required.';
@@ -182,7 +248,10 @@ class _AuthGateScreenState extends State<AuthGateScreen> {
             const SizedBox(height: 12),
             TextFormField(
               controller: _signupEmailCtrl,
-              decoration: const InputDecoration(labelText: 'Email'),
+              decoration: const InputDecoration(
+                labelText: 'Email',
+                prefixIcon: Icon(Icons.email_outlined),
+              ),
               keyboardType: TextInputType.emailAddress,
               validator: (value) {
                 final text = (value ?? '').trim();
@@ -195,7 +264,10 @@ class _AuthGateScreenState extends State<AuthGateScreen> {
             const SizedBox(height: 12),
             TextFormField(
               controller: _signupPhoneCtrl,
-              decoration: const InputDecoration(labelText: 'Phone Number'),
+              decoration: const InputDecoration(
+                labelText: 'Phone Number',
+                prefixIcon: Icon(Icons.phone_outlined),
+              ),
               keyboardType: TextInputType.phone,
               validator: (value) {
                 final text = (value ?? '').trim();
@@ -208,7 +280,10 @@ class _AuthGateScreenState extends State<AuthGateScreen> {
             const SizedBox(height: 12),
             TextFormField(
               controller: _signupPasswordCtrl,
-              decoration: const InputDecoration(labelText: 'Password'),
+              decoration: const InputDecoration(
+                labelText: 'Password',
+                prefixIcon: Icon(Icons.lock_outline),
+              ),
               obscureText: true,
               validator: (value) {
                 if ((value ?? '').length < 6) {
@@ -216,6 +291,14 @@ class _AuthGateScreenState extends State<AuthGateScreen> {
                 }
                 return null;
               },
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Use a fresh email and phone when testing signup.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
             ),
             const SizedBox(height: 24),
             SizedBox(

@@ -5,6 +5,7 @@ class SessionStorage {
   static const _userNameKey = 'session_user_name';
   static const _userEmailKey = 'session_user_email';
   static const _userPhoneKey = 'session_user_phone';
+  static const _lastTrackingReferenceKey = 'latest_tracking_reference';
 
   Future<void> saveSession({
     required String token,
@@ -45,5 +46,25 @@ class SessionStorage {
     await prefs.remove(_userNameKey);
     await prefs.remove(_userEmailKey);
     await prefs.remove(_userPhoneKey);
+    await prefs.remove(_lastTrackingReferenceKey);
+  }
+
+  Future<void> saveLastTrackingReference(String reference) async {
+    final prefs = await SharedPreferences.getInstance();
+    final cleanValue = reference.trim();
+    if (cleanValue.isEmpty) {
+      await prefs.remove(_lastTrackingReferenceKey);
+      return;
+    }
+    await prefs.setString(_lastTrackingReferenceKey, cleanValue);
+  }
+
+  Future<String?> getLastTrackingReference() async {
+    final prefs = await SharedPreferences.getInstance();
+    final value = prefs.getString(_lastTrackingReferenceKey);
+    if (value == null || value.trim().isEmpty) {
+      return null;
+    }
+    return value.trim();
   }
 }

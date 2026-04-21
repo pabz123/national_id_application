@@ -21,16 +21,6 @@ class NationalIdApplication(models.Model):
     ]
     REVIEW_ACTIVITY_PREFIX = '[National ID Review]'
 
-    # ── CONSTRAINTS (Odoo 19 syntax) ──────────────────────────
-    _email_unique = models.Constraint(
-        'UNIQUE(email)',
-        'This email address is already registered!'
-    )
-    _phone_unique = models.Constraint(
-        'UNIQUE(phone)',
-        'This phone number is already registered!'
-    )
-
     # ── BASIC INFORMATION ─────────────────────────────────────
     name = fields.Char(
         string='Application Reference',
@@ -119,6 +109,17 @@ class NationalIdApplication(models.Model):
     rejected_by_id = fields.Many2one('res.users', string='Rejected By', readonly=True)
     rejected_on = fields.Datetime(string='Rejected On', readonly=True)
 
+    def init(self):
+        # Keep historical rejected records while allowing applicants to reapply.
+        self.env.cr.execute(
+            'ALTER TABLE national_id_application '
+            'DROP CONSTRAINT IF EXISTS national_id_application_email_unique'
+        )
+        self.env.cr.execute(
+            'ALTER TABLE national_id_application '
+            'DROP CONSTRAINT IF EXISTS national_id_application_phone_unique'
+        )
+
     # ── COMPUTED FIELDS ───────────────────────────────────────
     @api.depends('date_of_birth')
     def _compute_age(self):
@@ -158,6 +159,14 @@ class NationalIdApplication(models.Model):
             record.pending_reviewer_ids = review_activities.mapped('user_id')
 
     # ── CONSTRAINTS ───────────────────────────────────────────
+    @staticmethod
+    def _normalize_email(value):
+        return (value or '').strip().lower()
+
+    @staticmethod
+    def _normalize_phone(value):
+        return re.sub(r'[^\d+]', '', (value or '').strip())
+
     @api.constrains('date_of_birth')
     def _check_age(self):
         for record in self:
@@ -174,16 +183,50 @@ class NationalIdApplication(models.Model):
     def _check_email(self):
         email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         for record in self:
-            if record.email and not re.match(email_pattern, record.email):
+            email = self._normalize_email(record.email)
+            if email and not re.match(email_pattern, email):
                 raise ValidationError('Please enter a valid email address.')
 
     @api.constrains('phone')
     def _check_phone(self):
         for record in self:
             if record.phone:
-                phone_clean = re.sub(r'[^\d+]', '', record.phone)
-                if len(phone_clean) < 10:
+                phone_clean = self._normalize_phone(record.phone)
+                digits_only = re.sub(r'\D', '', phone_clean)
+                if len(digits_only) < 10:
                     raise ValidationError('Phone number must be at least 10 digits.')
+
+    @api.constrains('email', 'state')
+    def _check_active_email_uniqueness(self):
+        for record in self:
+            email = self._normalize_email(record.email)
+            if not email or record.state == 'rejected':
+                continue
+            existing = self.search([
+                ('id', '!=', record.id),
+                ('state', '!=', 'rejected'),
+                ('email', '=ilike', email),
+            ], limit=1)
+            if existing:
+                raise ValidationError(
+                    'An active application with this email already exists.'
+                )
+
+    @api.constrains('phone', 'state')
+    def _check_active_phone_uniqueness(self):
+        for record in self:
+            phone = self._normalize_phone(record.phone)
+            if not phone or record.state == 'rejected':
+                continue
+            existing = self.search([
+                ('id', '!=', record.id),
+                ('state', '!=', 'rejected'),
+                ('phone', '=', phone),
+            ], limit=1)
+            if existing:
+                raise ValidationError(
+                    'An active application with this phone number already exists.'
+                )
 
     # ── AUTO-NUMBERING ────────────────────────────────────────
     @api.model_create_multi
@@ -192,7 +235,19 @@ class NationalIdApplication(models.Model):
             if not vals.get('name') or vals.get('name') == 'New':
                 vals['name'] = self.env['ir.sequence'].next_by_code(
                     'national.id.application') or 'New'
+            if 'email' in vals:
+                vals['email'] = self._normalize_email(vals.get('email'))
+            if 'phone' in vals:
+                vals['phone'] = self._normalize_phone(vals.get('phone'))
         return super().create(vals_list)
+
+    def write(self, vals):
+        clean_vals = dict(vals)
+        if 'email' in clean_vals:
+            clean_vals['email'] = self._normalize_email(clean_vals.get('email'))
+        if 'phone' in clean_vals:
+            clean_vals['phone'] = self._normalize_phone(clean_vals.get('phone'))
+        return super().write(clean_vals)
 
     # ── HELPERS ───────────────────────────────────────────────
     def _get_missing_required_field_labels(self):
@@ -447,10 +502,10 @@ class NationalIdApplication(models.Model):
             ],
             'Only approvers or National ID admins can reject applications.'
         )
-        if self.state not in ['stage1_review', 'stage1_approved', 'stage2_review']:
+        if self.state not in ['stage1_review', 'stage2_review']:
             raise UserError(
                 'Applications can only be rejected while in Stage 1 Review, '
-                'Stage 1 Approved, or Stage 2 Review.'
+                'or Stage 2 Review.'
             )
         return {
             'name': 'Reject Application',
@@ -473,7 +528,7 @@ class NationalIdApplication(models.Model):
                 ],
                 'Only Stage 2 approvers or National ID admins can reject at Stage 2.'
             )
-        elif self.state in ['stage1_review', 'stage1_approved']:
+        elif self.state == 'stage1_review':
             self._check_any_group(
                 [
                     'national_id_application.group_national_id_stage1_approver',
@@ -484,7 +539,7 @@ class NationalIdApplication(models.Model):
         else:
             raise UserError(
                 'Applications can only be rejected while in Stage 1 Review, '
-                'Stage 1 Approved, or Stage 2 Review.'
+                'or Stage 2 Review.'
             )
         clean_reason = (reason or '').strip()
         if not clean_reason:

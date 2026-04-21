@@ -17,23 +17,12 @@ class NationalIdMobileApiController(http.Controller):
         'rejected': 'Rejected',
     }
 
-    CORS_HEADERS = {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': (
-            'Origin, Content-Type, Accept, Authorization, X-Odoo-Database'
-        ),
-        'Access-Control-Max-Age': '86400',
-    }
-
     def _json_response(self, payload, status=200):
         response = Response(
             json.dumps(payload),
             status=status,
             content_type='application/json;charset=utf-8',
         )
-        for key, value in self.CORS_HEADERS.items():
-            response.headers[key] = value
         return response
 
     def _read_json_payload(self):
@@ -55,6 +44,20 @@ class NationalIdMobileApiController(http.Controller):
 
     def _build_duplicate_error_payload(self, message):
         lower_message = (message or '').lower()
+        if 'active application with this email already exists' in lower_message:
+            return {
+                'success': False,
+                'message': (
+                    'An active application with this email already exists.'
+                ),
+            }
+        if 'active application with this phone number already exists' in lower_message:
+            return {
+                'success': False,
+                'message': (
+                    'An active application with this phone number already exists.'
+                ),
+            }
         if (
             'national_id_application_email_unique' in lower_message
             or 'email address is already registered' in lower_message
@@ -76,6 +79,54 @@ class NationalIdMobileApiController(http.Controller):
         ):
             return {'success': False, 'message': 'An account with this phone number already exists.'}
         return {'success': False, 'message': message or 'Request failed.'}
+
+    def _build_decision_feedback(self, application):
+        if application.state == 'approved':
+            decision_reason = (
+                (application.stage2_review_notes or '').strip()
+                or (application.stage1_review_notes or '').strip()
+                or 'Your application passed all verification stages.'
+            )
+            return {
+                'decision_reason': decision_reason,
+                'next_step_recommendation': (
+                    'Keep your tracking number and wait for collection guidance from the issuing office.'
+                ),
+            }
+        if application.state == 'rejected':
+            rejection_guidance = {
+                'incomplete_information': (
+                    'Update missing fields and reapply with complete information.'
+                ),
+                'invalid_documents': (
+                    'Prepare clear, valid documents and submit a fresh application.'
+                ),
+                'duplicate_application': (
+                    'Use your existing active tracking number, or reapply only after the previous application is closed.'
+                ),
+                'failed_verification': (
+                    'Review your details carefully, correct inconsistencies, and reapply.'
+                ),
+                'other': (
+                    'Follow the rejection reason, make corrections, and submit a new application.'
+                ),
+            }
+            return {
+                'decision_reason': (
+                    (application.rejection_reason or '').strip()
+                    or 'The application did not pass verification.'
+                ),
+                'next_step_recommendation': rejection_guidance.get(
+                    application.rejection_category or 'other',
+                    rejection_guidance['other'],
+                ),
+            }
+        return {
+            'decision_reason': '',
+            'next_step_recommendation': (
+                'Your application is under review. Keep checking this tracking page for updates.'
+            ),
+        }
 
     def _build_stage_timeline(self, status_code):
         ordered = [
@@ -265,6 +316,7 @@ class NationalIdMobileApiController(http.Controller):
                 status=404,
             )
 
+        feedback = self._build_decision_feedback(application)
         return self._json_response({
             'success': True,
             'application': {
@@ -274,5 +326,7 @@ class NationalIdMobileApiController(http.Controller):
                 'status': self.STATE_LABELS.get(application.state, application.state),
                 'timeline': self._build_stage_timeline(application.state),
                 'rejection_reason': application.rejection_reason or '',
+                'decision_reason': feedback['decision_reason'],
+                'next_step_recommendation': feedback['next_step_recommendation'],
             },
         })

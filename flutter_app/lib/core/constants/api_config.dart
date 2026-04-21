@@ -4,7 +4,7 @@ class ApiConfig {
     defaultValue: 'http://127.0.0.1:8069',
   );
   static const String databaseName = 'Odoo-Project';
-  static const Duration requestTimeout = Duration(seconds: 20);
+  static const Duration requestTimeout = Duration(seconds: 60);
 
   static Map<String, String> jsonHeaders({String? token}) {
     final headers = <String, String>{'Accept': 'application/json'};

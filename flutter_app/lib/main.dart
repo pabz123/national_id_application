@@ -68,8 +68,43 @@ class NationalIdApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           title: 'National ID Mobile',
           theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFF0E7C4A),
+              brightness: Brightness.light,
+            ),
             useMaterial3: true,
+            scaffoldBackgroundColor: const Color(0xFFF4F8F5),
+            appBarTheme: const AppBarTheme(
+              centerTitle: false,
+              backgroundColor: Color(0xFF0E7C4A),
+              foregroundColor: Colors.white,
+              elevation: 0,
+            ),
+            inputDecorationTheme: InputDecorationTheme(
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFCAD8D0)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFF0E7C4A), width: 1.4),
+              ),
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0E7C4A),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+            ),
           ),
           home: const _AppEntryPoint(),
         ),

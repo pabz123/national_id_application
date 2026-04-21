@@ -71,7 +71,7 @@
                         type="object"
                         class="btn-danger"
                         groups="national_id_application.group_national_id_stage1_approver,national_id_application.group_national_id_stage2_approver,national_id_application.group_national_id_admin"
-                        invisible="state in ['approved', 'rejected']"/>
+                        invisible="state not in ['stage1_review', 'stage2_review']"/>
                     
                     <button name="action_reset_to_new"
                         string="Reset to New"

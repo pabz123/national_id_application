@@ -22,7 +22,7 @@ An Odoo 19 module for processing online national ID applications with a public w
 - `POST /api/mobile/login` - authenticate and receive bearer token
 - `GET /api/mobile/metadata` - countries + districts for form dropdowns
 - `POST /api/mobile/application/submit` - submit application with multipart files
-- `GET /api/mobile/application/track?reference=<tracking_number>` - fetch status by reference
+- `GET /api/mobile/application/track?reference=<tracking_number>` - fetch status, reason, and next-step guidance
 
 ### Application Fields
 - Full Name

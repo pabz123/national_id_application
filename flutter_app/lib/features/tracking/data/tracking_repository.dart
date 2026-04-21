@@ -31,6 +31,8 @@ class TrackingApplication {
     required this.statusLabel,
     required this.timeline,
     required this.rejectionReason,
+    required this.decisionReason,
+    required this.nextStepRecommendation,
   });
 
   final String reference;
@@ -39,6 +41,8 @@ class TrackingApplication {
   final String statusLabel;
   final List<TrackingStage> timeline;
   final String rejectionReason;
+  final String decisionReason;
+  final String nextStepRecommendation;
 
   factory TrackingApplication.fromJson(Map<String, dynamic> json) {
     final timelineRaw = (json['timeline'] as List?) ?? const [];
@@ -48,6 +52,9 @@ class TrackingApplication {
       statusCode: (json['status_code'] ?? '').toString(),
       statusLabel: (json['status'] ?? '').toString(),
       rejectionReason: (json['rejection_reason'] ?? '').toString(),
+      decisionReason: (json['decision_reason'] ?? '').toString(),
+      nextStepRecommendation:
+          (json['next_step_recommendation'] ?? '').toString(),
       timeline: timelineRaw
           .whereType<Map>()
           .map((item) => TrackingStage.fromJson(item.cast<String, dynamic>()))
@@ -76,7 +83,8 @@ class TrackingRepository {
     );
     final data = _decodeJson(response.body);
     if (response.statusCode >= 400 || data['success'] != true) {
-      throw Exception(_extractError(data, fallback: 'Unable to track application.'));
+      throw Exception(
+          _extractError(data, fallback: 'Unable to track application.'));
     }
     final applicationMap =
         (data['application'] as Map?)?.cast<String, dynamic>() ?? {};

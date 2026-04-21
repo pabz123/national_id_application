@@ -98,15 +98,23 @@ class NationalIdController(http.Controller):
             if (
                 'email address is already registered' in lower_message
                 or 'national_id_application_email_unique' in lower_message
+                or 'active application with this email already exists' in lower_message
             ):
                 field_errors['email'] = 'This email is already registered. Please use a different one.'
-                error_message = 'An application with this email already exists.'
+                error_message = (
+                    'An active application with this email already exists. '
+                    'If your previous application was rejected, you can reapply.'
+                )
             elif (
                 'phone number is already registered' in lower_message
                 or 'national_id_application_phone_unique' in lower_message
+                or 'active application with this phone number already exists' in lower_message
             ):
                 field_errors['phone'] = 'This phone number is already registered. Please use a different one.'
-                error_message = 'An application with this phone number already exists.'
+                error_message = (
+                    'An active application with this phone number already exists. '
+                    'If your previous application was rejected, you can reapply.'
+                )
 
             return request.render(
                 'national_id_application.application_form_template',

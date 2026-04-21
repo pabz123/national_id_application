@@ -4,7 +4,12 @@ import 'package:national_id_flutter_app/features/tracking/bloc/tracking_bloc.dar
 import 'package:national_id_flutter_app/features/tracking/data/tracking_repository.dart';
 
 class TrackingScreen extends StatefulWidget {
-  const TrackingScreen({super.key});
+  const TrackingScreen({
+    this.suggestedReference,
+    super.key,
+  });
+
+  final String? suggestedReference;
 
   @override
   State<TrackingScreen> createState() => _TrackingScreenState();
@@ -12,6 +17,25 @@ class TrackingScreen extends StatefulWidget {
 
 class _TrackingScreenState extends State<TrackingScreen> {
   final _referenceCtrl = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    final suggested = widget.suggestedReference;
+    if (suggested != null && suggested.isNotEmpty) {
+      _referenceCtrl.text = suggested;
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant TrackingScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.suggestedReference != oldWidget.suggestedReference &&
+        widget.suggestedReference != null &&
+        widget.suggestedReference!.isNotEmpty) {
+      _referenceCtrl.text = widget.suggestedReference!;
+    }
+  }
 
   @override
   void dispose() {
@@ -49,6 +73,24 @@ class _TrackingScreenState extends State<TrackingScreen> {
                 'Track Application',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
+              if (widget.suggestedReference != null &&
+                  widget.suggestedReference!.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Card(
+                  child: ListTile(
+                    dense: true,
+                    leading: const Icon(Icons.confirmation_number_outlined),
+                    title: Text(widget.suggestedReference!),
+                    subtitle: const Text('Latest tracking number'),
+                    trailing: TextButton(
+                      onPressed: () {
+                        _referenceCtrl.text = widget.suggestedReference!;
+                      },
+                      child: const Text('Use'),
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 12),
               TextField(
                 controller: _referenceCtrl,
@@ -80,6 +122,43 @@ class _TrackingScreenState extends State<TrackingScreen> {
                     ),
                   ),
                 ),
+                if (application.decisionReason.isNotEmpty ||
+                    application.nextStepRecommendation.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  Card(
+                    color: application.statusCode == 'rejected'
+                        ? Theme.of(context).colorScheme.errorContainer
+                        : Theme.of(context).colorScheme.primaryContainer,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            application.statusCode == 'rejected'
+                                ? 'Why it was rejected'
+                                : 'Decision Details',
+                            style: const TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                          if (application.decisionReason.isNotEmpty) ...[
+                            const SizedBox(height: 6),
+                            Text(application.decisionReason),
+                          ],
+                          if (application
+                              .nextStepRecommendation.isNotEmpty) ...[
+                            const SizedBox(height: 10),
+                            const Text(
+                              'What to do next',
+                              style: TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(application.nextStepRecommendation),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 12),
                 ...application.timeline.map(_buildTimelineTile),
               ],

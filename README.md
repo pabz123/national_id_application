@@ -4,6 +4,8 @@ Production-style National ID workflow with:
 - Odoo approval pipeline (Stage 1 + Stage 2 + rejection handling)
 - Mobile API for signup/login/application/track
 - Flutter app (BLoC) for assignment flows
+- Professional UI with unified header system and Material 3 design
+- Responsive design optimized for mobile, tablet, and desktop
 
 ## Core Features
 
@@ -32,7 +34,28 @@ Tracking response includes:
 
 ---
 
-## Prerequisites
+## Automated Development Setup
+
+**Fast track**: From the project root, simply run:
+
+```bash
+bash START_DEVELOPMENT.sh
+```
+
+This script automatically:
+- Activates Python venv
+- Installs dependencies (passlib, psycopg2, etc.)
+- Starts Odoo on port 8067
+- Builds Flutter web app
+- Serves Flutter on port 5000
+
+Then open **http://127.0.0.1:5000** in your browser.
+
+---
+
+## Manual Installation
+
+### Prerequisites
 
 - Python 3.10+ (3.12 used in this project)
 - PostgreSQL
@@ -71,19 +94,90 @@ For module updates after code changes:
 
 ## Flutter Installation and Run
 
+### Quick Start
+
 From `custom_addons/national_id_application/flutter_app`:
 
-1. `flutter pub get`
-2. `flutter analyze`
-3. `flutter test`
-4. Run web app:
-   `flutter run -d web-server --web-port=5000 --dart-define=API_BASE_URL=http://127.0.0.1:8067`
+```bash
+flutter pub get
+flutter analyze
+flutter test
+```
+
+### Development (Debug Mode)
+
+```bash
+flutter run -d web-server --web-port=5000
+```
 
 Open: `http://127.0.0.1:5000`
 
-To build distributable web assets:
+### Production Build
 
-`flutter build web --dart-define=API_BASE_URL=http://127.0.0.1:8067`
+```bash
+flutter build web --release
+cd build/web
+python3 -m http.server 5000
+```
+
+Then open: `http://127.0.0.1:5000`
+
+---
+
+## UI Architecture
+
+### Theme System (`lib/core/theme/`)
+
+The app uses a **centralized, Material 3-compliant theme system** with:
+
+**app_theme.dart**:
+- Single `buildAppTheme()` function used in `main.dart`
+- Color scheme: Deep forest green (#0C3D28) primary, accent greens, light variants
+- Google Fonts integration (DM Sans, DM Serif Display)
+- Unified input decoration, button themes, card themes
+- Navigation bar theming
+
+**nid_header.dart**:
+- `NidHeader`: Reusable green header component (auth & authenticated variants)
+  - Auth screens: Just title/subtitle + Uganda branding
+  - Authenticated screens: User strip (avatar, name, email, tracking pill, logout button)
+  - Decorative circular patterns for visual sophistication
+- `NidSectionLabel`: Section header with hairline divider
+- `NidInfoBanner`: Error/info alert banner with icon
+
+### Screen Components
+
+**Auth** (`features/auth/presentation/auth_gate_screen.dart`):
+- `NidHeader` (auth variant)
+- Tabbed login/signup forms
+- Form validation with error banners
+- Password visibility toggle
+- Loading state indicator
+
+**Home** (`features/home/presentation/home_screen.dart`):
+- Bottom navigation bar (Apply / Track tabs)
+- No Scaffold AppBar (each child renders its own NidHeader)
+
+**Application** (`features/application/presentation/application_form_screen.dart`):
+- `NidHeader` (authenticated variant with tracking reference)
+- 4-step wizard form
+- Organized sections (Account, Personal Info, Documents, Review)
+- File upload zones
+- Validation feedback
+
+**Tracking** (`features/tracking/presentation/tracking_screen.dart`):
+- `NidHeader` (authenticated variant)
+- Reference input form
+- Status display with color-coded information
+- Decision details and next-step recommendations
+
+### Responsive Design
+
+All screens use:
+- `ConstrainedBox` for max-width on large screens
+- `MediaQuery` for adaptive layouts
+- Flexible spacing and padding
+- Proper text scaling
 
 ---
 

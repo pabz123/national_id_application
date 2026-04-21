@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:national_id_flutter_app/core/storage/session_storage.dart';
+import 'package:national_id_flutter_app/core/theme/app_theme.dart';
 import 'package:national_id_flutter_app/features/application/bloc/application_submission_bloc.dart';
 import 'package:national_id_flutter_app/features/application/data/application_repository.dart';
 import 'package:national_id_flutter_app/features/auth/bloc/auth_bloc.dart';
@@ -67,55 +68,8 @@ class NationalIdApp extends StatelessWidget {
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'National ID Mobile',
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: const Color(0xFF0C3D28),
-              brightness: Brightness.light,
-              background: const Color(0xFFFFFFFF),
-            ),
-            useMaterial3: true,
-            scaffoldBackgroundColor: const Color(0xFFFFFFFF),
-            appBarTheme: const AppBarTheme(
-              centerTitle: false,
-              backgroundColor: Color(0xFF0C3D28),
-              foregroundColor: Colors.white,
-              elevation: 0,
-            ),
-            cardTheme: CardThemeData(
-              elevation: 0,
-              color: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: const BorderSide(color: Color(0xFFE8EFE8), width: 1),
-              ),
-            ),
-            inputDecorationTheme: InputDecorationTheme(
-              filled: true,
-              fillColor: const Color(0xFFFAFCFB),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFDEE8E2)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFF0C3D28), width: 1.5),
-              ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            ),
-            elevatedButtonTheme: ElevatedButtonThemeData(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0C3D28),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-              ),
-            ),
-          ),
+          // ── Single source of truth for all styling ──
+          theme: buildAppTheme(),
           home: const _AppEntryPoint(),
         ),
       ),

@@ -805,40 +805,38 @@ class _ApplicationFormScreenState extends State<ApplicationFormScreen> {
             return LayoutBuilder(
               builder: (context, constraints) {
                 final shellWidth =
-                    math.min(constraints.maxWidth, 920.0).toDouble();
+                    math.min(constraints.maxWidth, 900.0).toDouble();
                 final bodyWidth = shellWidth - 40;
-                return Center(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: shellWidth),
-                    child: Container(
-                      margin: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: const Color(0xFFD6E4DC)),
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: Column(
-                        children: [
-                          _buildWizardHeader(),
-                          _buildStepIndicator(),
-                          Expanded(
-                            child: SingleChildScrollView(
-                              padding: const EdgeInsets.all(20),
-                              child: Form(
-                                key: _formKey,
-                                child: _buildStepBody(
-                                  metadata: metadata,
-                                  filteredDistricts: filteredDistricts,
-                                  state: state,
-                                  contentWidth: bodyWidth,
-                                ),
-                              ),
+                final isMobile = constraints.maxWidth < 600;
+                
+                return SingleChildScrollView(
+                  child: Container(
+                    color: Colors.white,
+                    child: Column(
+                      children: [
+                        _buildWizardHeader(),
+                        _buildStepIndicator(),
+                        Container(
+                          constraints: BoxConstraints(
+                            maxWidth: shellWidth,
+                            minHeight: constraints.maxHeight - 200,
+                          ),
+                          margin: EdgeInsets.symmetric(
+                            horizontal: isMobile ? 16 : 20,
+                            vertical: isMobile ? 16 : 24,
+                          ),
+                          child: Form(
+                            key: _formKey,
+                            child: _buildStepBody(
+                              metadata: metadata,
+                              filteredDistricts: filteredDistricts,
+                              state: state,
+                              contentWidth: bodyWidth,
                             ),
                           ),
-                          _buildFooter(state),
-                        ],
-                      ),
+                        ),
+                        _buildFooter(state),
+                      ],
                     ),
                   ),
                 );

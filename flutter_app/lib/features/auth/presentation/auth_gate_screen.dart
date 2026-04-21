@@ -71,6 +71,7 @@ class _AuthGateScreenState extends State<AuthGateScreen> {
         child: Scaffold(
           appBar: AppBar(
             title: const Text('National ID Services'),
+            elevation: 0,
           ),
           body: BlocBuilder<AuthBloc, AuthState>(
             builder: (context, state) {
@@ -80,82 +81,104 @@ class _AuthGateScreenState extends State<AuthGateScreen> {
                   children: [
                     if (isLoading) const LinearProgressIndicator(),
                     Expanded(
-                      child: Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 620),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(20),
+                        child: Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 600),
                             child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Container(
                                   width: double.infinity,
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 16,
-                                    vertical: 14,
+                                    vertical: 16,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFE5F3EA),
-                                    borderRadius: BorderRadius.circular(14),
+                                    color: const Color(0xFFFAFCFB),
+                                    borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: const Color(0xFFBDD9C9),
+                                      color: const Color(0xFFDEE8E2),
                                     ),
                                   ),
-                                  child: const Row(
+                                  child: Row(
                                     children: [
-                                      Icon(Icons.verified_user, size: 28, color: Color(0xFF0E7C4A)),
-                                      SizedBox(width: 12),
+                                      const Icon(Icons.verified_user, size: 28, color: Color(0xFF0C3D28)),
+                                      const SizedBox(width: 12),
                                       Expanded(
                                         child: Text(
-                                          'Secure mobile access for National ID application and tracking.',
+                                          'Secure access for National ID application and tracking',
+                                          style: Theme.of(context).textTheme.bodyMedium,
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-                                if (state.message != null && state.message!.isNotEmpty)
+                                if (state.message != null && state.message!.isNotEmpty) ...[
+                                  const SizedBox(height: 16),
                                   Container(
                                     width: double.infinity,
-                                    margin: const EdgeInsets.only(top: 12),
-                                    padding: const EdgeInsets.all(10),
+                                    padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
-                                      color: Theme.of(context).colorScheme.errorContainer,
+                                      color: const Color(0xFFFEE4E4),
                                       borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: const Color(0xFFE8B4B4)),
                                     ),
                                     child: Text(
                                       state.message!,
-                                      style: TextStyle(
-                                        color: Theme.of(context).colorScheme.onErrorContainer,
+                                      style: const TextStyle(
+                                        color: Color(0xFFC31C1C),
                                       ),
                                     ),
                                   ),
-                                const SizedBox(height: 12),
-                                Expanded(
-                                  child: Card(
-                                    elevation: 1,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    child: Column(
-                                      children: [
-                                        const Padding(
-                                          padding: EdgeInsets.fromLTRB(12, 12, 12, 0),
-                                          child: TabBar(
+                                ],
+                                const SizedBox(height: 24),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: const Color(0xFFE8EFE8)),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            border: Border(
+                                              bottom: BorderSide(
+                                                color: const Color(0xFFE8EFE8),
+                                              ),
+                                            ),
+                                          ),
+                                          child: const TabBar(
                                             tabs: [
-                                              Tab(text: 'Login'),
-                                              Tab(text: 'Signup'),
+                                              Padding(
+                                                padding: EdgeInsets.symmetric(vertical: 12),
+                                                child: Text('Login'),
+                                              ),
+                                              Padding(
+                                                padding: EdgeInsets.symmetric(vertical: 12),
+                                                child: Text('Signup'),
+                                              ),
                                             ],
+                                            indicatorColor: Color(0xFF0C3D28),
+                                            labelColor: Color(0xFF0C3D28),
+                                            unselectedLabelColor: Color(0xFF999999),
                                           ),
                                         ),
-                                        Expanded(
-                                          child: TabBarView(
-                                            children: [
-                                              _buildLoginTab(context, isLoading),
-                                              _buildSignupTab(context, isLoading),
-                                            ],
-                                          ),
+                                      ),
+                                      SizedBox(
+                                        height: 320,
+                                        child: TabBarView(
+                                          children: [
+                                            _buildLoginTab(context, isLoading),
+                                            _buildSignupTab(context, isLoading),
+                                          ],
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],

@@ -69,40 +69,50 @@ class NationalIdApp extends StatelessWidget {
           title: 'National ID Mobile',
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(
-              seedColor: const Color(0xFF0E7C4A),
+              seedColor: const Color(0xFF0C3D28),
               brightness: Brightness.light,
+              background: const Color(0xFFFFFFFF),
             ),
             useMaterial3: true,
-            scaffoldBackgroundColor: const Color(0xFFF4F8F5),
+            scaffoldBackgroundColor: const Color(0xFFFFFFFF),
             appBarTheme: const AppBarTheme(
               centerTitle: false,
-              backgroundColor: Color(0xFF0E7C4A),
+              backgroundColor: Color(0xFF0C3D28),
               foregroundColor: Colors.white,
               elevation: 0,
             ),
+            cardTheme: CardThemeData(
+              elevation: 0,
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: const BorderSide(color: Color(0xFFE8EFE8), width: 1),
+              ),
+            ),
             inputDecorationTheme: InputDecorationTheme(
               filled: true,
-              fillColor: Colors.white,
+              fillColor: const Color(0xFFFAFCFB),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFCAD8D0)),
+                borderSide: const BorderSide(color: Color(0xFFDEE8E2)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFF0E7C4A), width: 1.4),
+                borderSide: const BorderSide(color: Color(0xFF0C3D28), width: 1.5),
               ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             ),
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0E7C4A),
+                backgroundColor: const Color(0xFF0C3D28),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
               ),
             ),
           ),

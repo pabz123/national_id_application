@@ -36,7 +36,7 @@ Tracking response includes:
 
 - Python 3.10+ (3.12 used in this project)
 - PostgreSQL
-- Odoo 19 source
+- Odoo 19+ source
 - Flutter SDK 3.41+ (Dart 3.11+)
 - Chrome/Brave for Flutter web testing
 
@@ -58,14 +58,14 @@ From Odoo root:
 
 1. Create/activate virtualenv and install requirements.
 2. Run Odoo with custom addons:
-   `./venv/bin/python odoo-bin -d Odoo-Project --addons-path=addons,custom_addons --http-port=8067`
+   `./venv/bin/python odoo-bin -d 'Odoo-db name' --addons-path=addons,custom_addons --http-port=8067`
 3. In Odoo UI:
    - Apps → Update Apps List
    - Install **National ID Application**
 
 For module updates after code changes:
 
-`./venv/bin/python odoo-bin -d Odoo-Project --addons-path=addons,custom_addons -u national_id_application`
+`./venv/bin/python odoo-bin -d 'Odoo-db name' --addons-path=addons,custom_addons -u national_id_application`
 
 ---
 

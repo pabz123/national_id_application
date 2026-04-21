@@ -74,6 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('National ID Mobile'),
+        elevation: 0,
         actions: [
           IconButton(
             onPressed: () {
@@ -86,58 +87,80 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Column(
         children: [
-          Material(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.session.user.name,
-                    style: Theme.of(context).textTheme.titleMedium,
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.session.user.name,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
                   ),
-                  Text(widget.session.user.email),
-                  if (_latestReference != null) ...[
-                    const SizedBox(height: 8),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFCAD8D0)),
-                      ),
-                      child: Wrap(
-                        spacing: 10,
-                        runSpacing: 8,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          const Icon(Icons.confirmation_number_outlined,
-                              size: 18),
-                          Text(
-                            'Latest Tracking: $_latestReference',
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                          TextButton.icon(
-                            onPressed: _openTrackingWithLatestReference,
-                            icon: const Icon(Icons.search),
-                            label: const Text('Track now'),
-                          ),
-                        ],
-                      ),
+                ),
+                Text(
+                  widget.session.user.email,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: const Color(0xFF666666),
+                  ),
+                ),
+                if (_latestReference != null) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFAFCFB),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFDEE8E2)),
                     ),
-                  ],
+                    child: Row(
+                      children: [
+                        const Icon(Icons.confirmation_number_outlined,
+                            size: 18, color: Color(0xFF0C3D28)),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Latest Tracking',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: const Color(0xFF666666),
+                                ),
+                              ),
+                              Text(
+                                _latestReference ?? '',
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: _openTrackingWithLatestReference,
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                          ),
+                          child: const Text('Track'),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
-              ),
+              ],
             ),
           ),
+          const Divider(height: 1, color: Color(0xFFE8EFE8)),
           Expanded(child: pages[_tabIndex]),
         ],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _tabIndex,
+        backgroundColor: Colors.white,
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.assignment),

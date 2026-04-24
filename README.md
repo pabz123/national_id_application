@@ -233,37 +233,7 @@ Examples:
 3. User Status (check if has active application):
    `curl -H 'Authorization: Bearer <token>' 'http://127.0.0.1:8067/api/mobile/application/status?db=Odoo-Project'`
 
----
 
-## What's New (April 24, 2026)
-
-### UI/UX Improvements
-✨ **Typeable Nationality** - Changed from locked dropdown to searchable Autocomplete (195+ countries)  
-✨ **Typeable District** - Changed from locked dropdown to searchable Autocomplete (filters by country)  
-✨ **Date of Birth Picker** - Calendar widget replaces text input, validates age ≤120 years  
-✨ **Letters-Only Full Name** - Real-time filtering removes digits/symbols  
-✨ **Next of Kin Fields** - Two new required fields (name + phone) bring form to 12 fields
-
-### Backend Logic
-✨ **One Application Per User** - Prevents duplicate submissions (HTTP 409 Conflict)  
-✨ **Re-application Support** - Users can reapply after rejection  
-✨ **New Status Endpoint** - `/api/mobile/application/status` for checking active applications  
-✨ **Submit Guard** - Prevents accidental double-submission
-
-### Deployment
-✨ **Portable Startup Script** - Auto-detects paths, works on any machine  
-✨ **Fresh Setup** - `--init-db` flag for new database creation  
-✨ **Easy Reinstall** - `--install` flag after code changes  
-✨ **Custom Options** - `--db`, `--odoo-port`, `--flutter-port` flags
-
-### Documentation
-📄 **QUICK_START.txt** - Quick reference (2 KB)  
-📄 **IMPLEMENTATION_SUMMARY.md** - Technical documentation (14 KB)  
-📄 **FINAL_IMPROVEMENTS_REPORT.md** - Comprehensive report (23 KB)  
-📄 **VERIFICATION_CHECKLIST.md** - Quality assurance (8 KB)  
-📄 **FILES_UPDATED.txt** - Detailed changelog (9.8 KB)
-
----
 
 ## License
 

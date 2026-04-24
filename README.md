@@ -1,11 +1,15 @@
 # National ID Application (Odoo 19 + Flutter)
 
+**Status**: ✨ Production Ready ✨  
+**Last Updated**: April 24, 2026
+
 Production-style National ID workflow with:
 - Odoo approval pipeline (Stage 1 + Stage 2 + rejection handling)
 - Mobile API for signup/login/application/track
-- Flutter app (BLoC) for assignment flows
+- Flutter app (BLoC) for assignment flows with enhanced form UX
 - Professional UI with unified header system and Material 3 design
 - Responsive design optimized for mobile, tablet, and desktop
+- **NEW**: Typeable fields (Autocomplete), calendar date picker, one-application-per-user enforcement
 
 ## Core Features
 
@@ -14,23 +18,44 @@ Production-style National ID workflow with:
 - Reject action restricted to review stages only (`stage1_review`, `stage2_review`)
 - Rejections capture category + reason
 - Rejected applicants can reapply (duplicates blocked only for active non-rejected applications)
+- **NEW**: One application per user constraint - prevents duplicate submissions unless rejected
 
 ### 2. Mobile API
 - `POST /api/mobile/signup`
 - `POST /api/mobile/login`
-- `GET /api/mobile/metadata`
-- `POST /api/mobile/application/submit`
-- `GET /api/mobile/application/track?reference=<tracking_number>`
+- `GET /api/mobile/metadata` (countries + districts list)
+- `POST /api/mobile/application/submit` (with one-app guard, returns 409 if duplicate)
+- `GET /api/mobile/application/track/<reference>` (with decision feedback)
+- **NEW**: `GET /api/mobile/application/status` (check if user has active application)
 
 Tracking response includes:
 - status timeline
 - `decision_reason`
 - `next_step_recommendation`
 
-### 3. Flutter App (Assignment flows)
+### 3. Flutter App (Enhanced with UX improvements)
 - `features/auth`: signup/login/session restore
 - `features/application`: 4-step wizard (Account → Personal Info → Documents → Review)
+  - **NEW**: Nationality field uses Autocomplete (searchable)
+  - **NEW**: District field uses Autocomplete (filtered by country)
+  - **NEW**: Date of Birth uses calendar picker (validates age ≤120 years)
+  - **NEW**: Full Name enforces letters-only validation (no digits)
+  - **NEW**: Next of Kin fields (name + phone, required)
 - `features/tracking`: status timeline + decision feedback + next-step guidance
+
+### 4. Form Fields (12 Total)
+1. Full Name (letters-only)
+2. Email
+3. Phone
+4. Existing NIN (optional)
+5. Date of Birth (calendar picker)
+6. Gender
+7. Nationality (searchable Autocomplete) ✨ NEW
+8. District (searchable Autocomplete) ✨ NEW
+9. Next of Kin Name (letters-only) ✨ NEW
+10. Next of Kin Phone (10+ digits) ✨ NEW
+11. Photo (upload)
+12. LC Letter (upload)
 
 ---
 
@@ -39,15 +64,31 @@ Tracking response includes:
 **Fast track**: From the project root, simply run:
 
 ```bash
+# First time (fresh database)
+bash START_DEVELOPMENT.sh --init-db
+
+# Subsequent runs
 bash START_DEVELOPMENT.sh
+
+# After code changes
+bash START_DEVELOPMENT.sh --install
+
+# Custom settings
+bash START_DEVELOPMENT.sh --db mydb --odoo-port 8888 --flutter-port 5001
 ```
 
 This script automatically:
+- **Auto-detects** Odoo, Flutter, and Python paths (works on any machine)
 - Activates Python venv
-- Installs dependencies (passlib, psycopg2, etc.)
+- Installs dependencies (passlib, psycopg2-binary, python-dateutil)
+- Creates database (if `--init-db`)
+- Installs/upgrades module
 - Starts Odoo on port 8067
 - Builds Flutter web app
 - Serves Flutter on port 5000
+- Performs health checks and validates services are responding
+
+**NEW**: Portable script works on any machine without manual configuration!
 
 Then open **http://127.0.0.1:5000** in your browser.
 
@@ -189,6 +230,38 @@ Examples:
    `curl 'http://127.0.0.1:8067/api/mobile/metadata?db=Odoo-Project'`
 2. Track:
    `curl 'http://127.0.0.1:8067/api/mobile/application/track?db=Odoo-Project&reference=NID/2026/0001'`
+3. User Status (check if has active application):
+   `curl -H 'Authorization: Bearer <token>' 'http://127.0.0.1:8067/api/mobile/application/status?db=Odoo-Project'`
+
+---
+
+## What's New (April 24, 2026)
+
+### UI/UX Improvements
+✨ **Typeable Nationality** - Changed from locked dropdown to searchable Autocomplete (195+ countries)  
+✨ **Typeable District** - Changed from locked dropdown to searchable Autocomplete (filters by country)  
+✨ **Date of Birth Picker** - Calendar widget replaces text input, validates age ≤120 years  
+✨ **Letters-Only Full Name** - Real-time filtering removes digits/symbols  
+✨ **Next of Kin Fields** - Two new required fields (name + phone) bring form to 12 fields
+
+### Backend Logic
+✨ **One Application Per User** - Prevents duplicate submissions (HTTP 409 Conflict)  
+✨ **Re-application Support** - Users can reapply after rejection  
+✨ **New Status Endpoint** - `/api/mobile/application/status` for checking active applications  
+✨ **Submit Guard** - Prevents accidental double-submission
+
+### Deployment
+✨ **Portable Startup Script** - Auto-detects paths, works on any machine  
+✨ **Fresh Setup** - `--init-db` flag for new database creation  
+✨ **Easy Reinstall** - `--install` flag after code changes  
+✨ **Custom Options** - `--db`, `--odoo-port`, `--flutter-port` flags
+
+### Documentation
+📄 **QUICK_START.txt** - Quick reference (2 KB)  
+📄 **IMPLEMENTATION_SUMMARY.md** - Technical documentation (14 KB)  
+📄 **FINAL_IMPROVEMENTS_REPORT.md** - Comprehensive report (23 KB)  
+📄 **VERIFICATION_CHECKLIST.md** - Quality assurance (8 KB)  
+📄 **FILES_UPDATED.txt** - Detailed changelog (9.8 KB)
 
 ---
 

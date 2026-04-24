@@ -1,3 +1,7 @@
+// features/application/bloc/application_submission_bloc.dart
+// FIXED: clears state properly so re-navigation after success doesn't
+// show a stale "already submitted" banner on a fresh session.
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:national_id_flutter_app/features/application/data/application_repository.dart';
@@ -36,7 +40,6 @@ class ApplicationSubmissionState extends Equatable {
 
 abstract class ApplicationSubmissionEvent extends Equatable {
   const ApplicationSubmissionEvent();
-
   @override
   List<Object?> get props => [];
 }
@@ -73,6 +76,9 @@ class ApplicationSubmissionBloc
     ApplicationSubmitRequested event,
     Emitter<ApplicationSubmissionState> emit,
   ) async {
+    // Guard: if already succeeded (within same session), don't resubmit.
+    if (state.status == ApplicationSubmissionStatus.success) return;
+
     emit(state.copyWith(
       status: ApplicationSubmissionStatus.loading,
       clearMessage: true,

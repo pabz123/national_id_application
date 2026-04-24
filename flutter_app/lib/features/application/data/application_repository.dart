@@ -16,6 +16,8 @@ class ApplicationFormRequest {
     required this.email,
     required this.photoFile,
     required this.lcLetterFile,
+    required this.nextOfKinName,
+    required this.nextOfKinPhone,
     this.districtId,
     this.existingNin,
   });
@@ -29,26 +31,23 @@ class ApplicationFormRequest {
   final String email;
   final PlatformFile photoFile;
   final PlatformFile lcLetterFile;
+  final String nextOfKinName;
+  final String nextOfKinPhone;
   final int? districtId;
   final String? existingNin;
 }
 
 class ApplicationRepository {
   ApplicationRepository({required http.Client client}) : _client = client;
-
   final http.Client _client;
 
   Future<FormMetadata> fetchMetadata() async {
     final uri = ApiConfig.buildUri('/api/mobile/metadata');
-    final response = await _client.get(
-      uri,
-      headers: ApiConfig.jsonHeaders(),
-    ).timeout(
-      ApiConfig.requestTimeout,
-      onTimeout: () => throw Exception(
-        'Metadata request timed out. Check API URL or backend server status.',
-      ),
-    );
+    final response = await _client
+        .get(uri, headers: ApiConfig.jsonHeaders())
+        .timeout(ApiConfig.requestTimeout,
+            onTimeout: () => throw Exception(
+                'Metadata timed out. Check API URL.'));
     final data = _decodeJson(response.body);
     if (response.statusCode >= 400 || data['success'] != true) {
       throw Exception(_extractError(data, fallback: 'Failed to load form metadata.'));
@@ -61,11 +60,9 @@ class ApplicationRepository {
     required ApplicationFormRequest request,
   }) async {
     final uri = ApiConfig.buildUri('/api/mobile/application/submit');
-    final multipartRequest = http.MultipartRequest('POST', uri);
-    multipartRequest.headers.addAll({
-      'Authorization': 'Bearer $token',
-    });
-    multipartRequest.fields.addAll({
+    final mp = http.MultipartRequest('POST', uri);
+    mp.headers['Authorization'] = 'Bearer $token';
+    mp.fields.addAll({
       'full_name': request.fullName.trim(),
       'date_of_birth': request.dateOfBirth.trim(),
       'gender': request.gender,
@@ -75,22 +72,19 @@ class ApplicationRepository {
       'email': request.email.trim(),
       'existing_nin': (request.existingNin ?? '').trim(),
       'district_id': request.districtId?.toString() ?? '',
+      'next_of_kin_name': request.nextOfKinName.trim(),
+      'next_of_kin_phone': request.nextOfKinPhone.trim(),
     });
+    mp.files.add(await _toFile('photo', request.photoFile));
+    mp.files.add(await _toFile('lc_letter', request.lcLetterFile));
 
-    multipartRequest.files.add(await _toMultipartFile('photo', request.photoFile));
-    multipartRequest.files
-        .add(await _toMultipartFile('lc_letter', request.lcLetterFile));
-
-    final streamed = await multipartRequest.send().timeout(
-      ApiConfig.requestTimeout,
-      onTimeout: () => throw Exception(
-        'Submission timed out. Check API URL or backend server status.',
-      ),
-    );
+    final streamed = await mp.send().timeout(ApiConfig.requestTimeout,
+        onTimeout: () =>
+            throw Exception('Submission timed out. Check API URL.'));
     final response = await http.Response.fromStream(streamed);
     final data = _decodeJson(response.body);
     if (response.statusCode >= 400 || data['success'] != true) {
-      throw Exception(_extractError(data, fallback: 'Application submission failed.'));
+      throw Exception(_extractError(data, fallback: 'Submission failed.'));
     }
     return ApplicationSubmissionResult(
       reference: (data['reference'] ?? '').toString(),
@@ -98,40 +92,26 @@ class ApplicationRepository {
     );
   }
 
-  Future<http.MultipartFile> _toMultipartFile(
-    String fieldName,
-    PlatformFile file,
-  ) async {
-    if (file.bytes != null) {
-      return http.MultipartFile.fromBytes(
-        fieldName,
-        file.bytes!,
-        filename: file.name,
-      );
+  Future<http.MultipartFile> _toFile(String field, PlatformFile f) async {
+    if (f.bytes != null) {
+      return http.MultipartFile.fromBytes(field, f.bytes!, filename: f.name);
     }
-    if (file.path != null && file.path!.isNotEmpty) {
-      return http.MultipartFile.fromPath(fieldName, file.path!);
+    if (f.path != null && f.path!.isNotEmpty) {
+      return http.MultipartFile.fromPath(field, f.path!);
     }
-    throw Exception('Unable to read selected file: ${file.name}');
+    throw Exception('Cannot read file: ${f.name}');
   }
 
   Map<String, dynamic> _decodeJson(String body) {
     try {
-      final decoded = jsonDecode(body);
-      if (decoded is Map<String, dynamic>) {
-        return decoded;
-      }
-    } catch (_) {
-      // Use fallback.
-    }
-    return const <String, dynamic>{};
+      final d = jsonDecode(body);
+      if (d is Map<String, dynamic>) return d;
+    } catch (_) {}
+    return const {};
   }
 
-  String _extractError(
-    Map<String, dynamic> data, {
-    required String fallback,
-  }) {
-    final message = data['message']?.toString().trim() ?? '';
-    return message.isNotEmpty ? message : fallback;
+  String _extractError(Map<String, dynamic> data, {required String fallback}) {
+    final msg = data['message']?.toString().trim() ?? '';
+    return msg.isNotEmpty ? msg : fallback;
   }
 }

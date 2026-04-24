@@ -567,8 +567,8 @@ class _ApplicationFormScreenState
                 validator: (v) {
                   final phone = (v ?? '').trim();
                   if (phone.isEmpty) return 'Phone is required.';
-                  if (phone.length < 9) {
-                    return 'Phone must be at least 10 digits.';';
+                  if (phone.length < 10) {
+                     return 'Phone must be at least 10 digits.';
                   }
                   return null;
                 },
@@ -674,17 +674,8 @@ class _ApplicationFormScreenState
                 validator: (v) {
                   final phone = (v ?? '').trim();
                   if (phone.isEmpty) return 'Phone is required.';
-                  if (_selectedCountryName == null) {
-                    return 'Select nationality first.';
-                  }
-                  final countryCode = countryPhoneCodes[_selectedCountryName];
-                  if (countryCode == null) {
-                    return 'Country code not available.';
-                  }
-                  final fullPhone = '${countryCode['code']}$phone';
-                  final pattern = RegExp(countryCode['pattern'] as String);
-                  if (!pattern.hasMatch(fullPhone)) {
-                    return 'Invalid phone for $_selectedCountryName.';
+                  if (phone.length < 10) {
+                    return 'Phone must be at least 10 digits.';
                   }
                   return null;
                 },

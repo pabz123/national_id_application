@@ -3,7 +3,10 @@ class ApiConfig {
     'API_BASE_URL',
     defaultValue: 'http://127.0.0.1:8067',
   );
-  static const String databaseName = 'Odoo-Project';
+  static const String databaseName = String.fromEnvironment(
+    'ODOO_DB',
+    defaultValue: 'Odoo-Project',
+  );
   static const Duration requestTimeout = Duration(seconds: 60);
 
   static Map<String, String> jsonHeaders({String? token}) {

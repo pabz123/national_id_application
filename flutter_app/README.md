@@ -1,6 +1,6 @@
 # National ID Flutter App
 
-Flutter client for the National ID assignment (BLoC architecture), integrated with Odoo 19 APIs.
+Flutter client for the National ID assignment (BLoC architecture), integrated with Odoo APIs.
 
 ## Features
 
@@ -22,6 +22,20 @@ Flutter client for the National ID assignment (BLoC architecture), integrated wi
 - Dart 3.11+
 - Running Odoo backend API
 
+## Runtime Configuration
+
+The app supports compile-time environment variables:
+
+- `API_BASE_URL` (required for non-local environments)
+- `ODOO_DB` (database name)
+
+Example for Odoo.sh:
+
+```bash
+--dart-define=API_BASE_URL=https://mulungiinternship.odoo.com \
+--dart-define=ODOO_DB=mulungiinternship
+```
+
 ## Setup
 
 1. Install dependencies:
@@ -35,18 +49,48 @@ Flutter client for the National ID assignment (BLoC architecture), integrated wi
 
 ### Web server (recommended for local integration)
 
-`flutter run -d web-server --web-port=5000 --dart-define=API_BASE_URL=http://127.0.0.1:8067`
+```bash
+flutter run -d web-server --web-port=5000 \
+  --dart-define=API_BASE_URL=http://127.0.0.1:8067 \
+  --dart-define=ODOO_DB=Odoo-Project
+```
 
 Open `http://127.0.0.1:5000`.
 
-### Chrome device
+### Android device (against Odoo.sh)
 
-`flutter run -d chrome --dart-define=API_BASE_URL=http://127.0.0.1:8067`
+```bash
+flutter run -d android \
+  --dart-define=API_BASE_URL=https://mulungiinternship.odoo.com \
+  --dart-define=ODOO_DB=mulungiinternship
+```
 
 ## Build
 
-Build distributable web artifacts:
+### Build web
 
-`flutter build web --dart-define=API_BASE_URL=http://127.0.0.1:8067`
+```bash
+flutter build web \
+  --dart-define=API_BASE_URL=https://mulungiinternship.odoo.com \
+  --dart-define=ODOO_DB=mulungiinternship
+```
 
 Output: `build/web/`
+
+### Build optimized APKs (split ABI)
+
+Use split-per-ABI so each APK is smaller:
+
+```bash
+flutter build apk --release --split-per-abi \
+  --dart-define=API_BASE_URL=https://mulungiinternship.odoo.com \
+  --dart-define=ODOO_DB=mulungiinternship
+```
+
+Generated files:
+
+- `build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk`
+- `build/app/outputs/flutter-apk/app-arm64-v8a-release.apk`
+- `build/app/outputs/flutter-apk/app-x86_64-release.apk`
+
+For most real Android phones, share `app-arm64-v8a-release.apk`.

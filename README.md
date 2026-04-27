@@ -43,6 +43,18 @@ Tracking response includes:
   - **NEW**: Next of Kin fields (name + phone, required)
 - `features/tracking`: status timeline + decision feedback + next-step guidance
 
+
+### 5. Security Model (Groups, Access Rights, Record Rules)
+- Groups: Officer, Approver (base), Stage 1 Approver, Stage 2 Approver, Admin
+- Access rights are defined in `security/ir.model.access.csv` per model/group
+- Record rules in `security/national_id_security.xml` enforce stage-based visibility/write access
+- Multi-stage approvals are role-separated:
+  - Stage 1 approvers operate Stage 1 transitions
+  - Stage 2 approvers operate final approval transitions
+  - Admin has full supervisory access
+
+---
+
 ### 4. Form Fields (12 Total)
 1. Full Name (letters-only)
 2. Email
